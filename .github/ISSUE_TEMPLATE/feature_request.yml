@@ -1,0 +1,103 @@
+name: Feature request
+description: Suggest an improvement or new capability for the Solplanet / VoltX Home Assistant integration
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement.
+
+        This repository is primarily focused on **V2 devices/firmware** (see the note in the README).
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: This request is for a V2 device/firmware (or I understand V1 is not supported by this fork)
+          required: true
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: What kind of request is this?
+      options:
+        - New sensor/entity
+        - New control/service
+        - Bugfix disguised as a feature (please describe)
+        - Performance / reliability improvement
+        - Documentation / UX improvement
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: inverter_model
+    attributes:
+      label: Inverter model
+      placeholder: "ASWxxxx"
+    validations:
+      required: true
+
+  - type: input
+    id: battery_model
+    attributes:
+      label: Battery model
+      placeholder: "ASWxxxx"
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the use-case and why the current integration doesn't meet it
+      placeholder: |
+        Example:
+        - I want to...
+        - Today I have to...
+        - This is painful because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe what you would like the integration to do
+      placeholder: |
+        Example:
+        - Add a new sensor for ...
+        - Expose a service to ...
+        - Add an option to ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Any workarounds or other approaches?
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Links, screenshots, Modbus register details, etc.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I can help test a pre-release / branch
+          required: false
+
