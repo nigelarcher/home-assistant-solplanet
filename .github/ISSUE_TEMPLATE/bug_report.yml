@@ -67,7 +67,7 @@ body:
     id: battery_model
     attributes:
       label: Battery model
-      description: Battery/inverter battery interface model, if applicable
+      description: Battery model
       placeholder: "ASWxxxx"
     validations:
       required: true
