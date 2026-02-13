@@ -1,0 +1,126 @@
+---
+
+name: Bug report
+description: Report a problem with the Solplanet / VoltX Home Assistant integration
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        This repository is primarily focused on **V2 devices/firmware** (see the note in the README).
+        For **V1** devices, fixes/features are unlikely to be added.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I am using a V2 device/firmware (or understand V1 is not supported by this fork)
+          required: true
+        - label: I am using the latest version of this integration (or have described why I cannot)
+          required: true
+
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: Installation method
+      options:
+        - HACS
+        - Manual
+        - Other (please describe below)
+    validations:
+      required: true
+
+  - type: input
+    id: integration_version
+    attributes:
+      label: Integration version
+      description: Version shown in HACS, or the tag/commit you installed
+      placeholder: "0.9.0"
+    validations:
+      required: true
+
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      description: The Home Assistant Core version
+      placeholder: "2026.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: inverter_model
+    attributes:
+      label: Inverter model
+      placeholder: "ASWxxxx"
+    validations:
+      required: true
+
+  - type: input
+    id: battery_model
+    attributes:
+      label: Battery model
+      description: Battery/inverter battery interface model, if applicable
+      placeholder: "ASWxxxx"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What do we need to do to reproduce the issue?
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        Please include logs with **DEBUG** enabled for `custom_components.solplanet`.
+
+        You can enable debug logging from Settings → System → Logs → Configure.
+      render: shell
+      placeholder: |
+        Paste logs here
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics information
+      description: |
+        If possible, attach a diagnostics file:
+        Settings → Devices & services → Integrations → Solplanet → ⋮ → Download diagnostics
+      placeholder: "Attach diagnostics file or paste sanitized output here"
+    validations:
+      required: false
