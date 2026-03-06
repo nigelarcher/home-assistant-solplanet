@@ -42,7 +42,7 @@ body:
     attributes:
       label: Integration version
       description: Version shown in HACS, or the tag/commit you installed
-      placeholder: "0.9.0"
+      placeholder: "0.10.0"
     validations:
       required: true
 
@@ -51,7 +51,7 @@ body:
     attributes:
       label: Home Assistant version
       description: The Home Assistant Core version
-      placeholder: "2026.2.0"
+      placeholder: "2026.3.0"
     validations:
       required: true
 

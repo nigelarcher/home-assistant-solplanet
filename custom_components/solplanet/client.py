@@ -9,7 +9,7 @@ This module contains:
 
 import asyncio
 import base64
-from dataclasses import asdict, is_dataclass
+from dataclasses import asdict, is_dataclass, dataclass, fields
 import json
 import logging
 import time
@@ -253,10 +253,6 @@ class ModbusApiMixin:
 # Helper Classes
 # ============================================================================
 
-
-from dataclasses import dataclass  # noqa: E402
-
-
 @dataclass
 class BatteryWorkMode:
     """Represent data for battery work mode.
@@ -473,10 +469,6 @@ class BatterySchedule:
 # ============================================================================
 # Response Models (shared by both V1 and V2 APIs)
 # ============================================================================
-
-from dataclasses import dataclass
-from inspect import signature
-
 
 @dataclass
 class GetInverterDataResponse:
@@ -964,7 +956,8 @@ class SolplanetApiV1(ModbusApiMixin):
 
     def _create_class_from_dict(self, cls, dict):
         """Create dataclass instance from dict."""
-        return cls(**{k: v for k, v in dict.items() if k in signature(cls).parameters})
+        allowed = {f.name for f in fields(cls)}
+        return cls(**{k: v for k, v in dict.items() if k in allowed})
 
 
 class SolplanetApiV2(ModbusApiMixin):
@@ -1129,8 +1122,8 @@ class SolplanetApiV2(ModbusApiMixin):
 
     def _create_class_from_dict(self, cls, dict):
         """Create dataclass instance from dict."""
-        return cls(**{k: v for k, v in dict.items() if k in signature(cls).parameters})
-
+        allowed = {f.name for f in fields(cls)}
+        return cls(**{k: v for k, v in dict.items() if k in allowed})
 
 # Alias for backward compatibility
 SolplanetApi = SolplanetApiV2
