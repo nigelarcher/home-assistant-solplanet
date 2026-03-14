@@ -60,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
     try:
         api = await SolplanetApiAdapter.create(client)
     except Exception as e:
+        _LOGGER.warning("Failed to set up Solplanet at %s, will retry: %s", entry.data[CONF_HOST], e)
         raise ConfigEntryNotReady(str(e)) from e
 
     _LOGGER.info("Using Solplanet protocol version: %s", api.version)

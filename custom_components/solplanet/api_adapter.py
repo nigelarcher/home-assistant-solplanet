@@ -79,18 +79,24 @@ class SolplanetApiAdapter:
             ("v1", "invinfo.cgi", "http", 8484),
         ]
 
+        errors: list[str] = []
         for version, endpoint, scheme, port in api_configs:
             client.scheme = scheme
             client.port = port
             try:
-                _LOGGER.debug("Attempting to detect %s protocol...", version)
+                _LOGGER.debug("Attempting to detect %s protocol at %s:%s...", version, scheme, port)
                 await client.get(endpoint)
                 _LOGGER.debug("%s protocol detected successfully", version)
                 return version
             except Exception as e:
-                _LOGGER.debug("%s protocol detection failed: %s", version, e)
+                _LOGGER.warning(
+                    "Protocol %s detection failed (%s://%s:%s/%s): %s",
+                    version, scheme, client.host, port, endpoint, e,
+                )
+                errors.append(f"{version} ({scheme}://{client.host}:{port}/{endpoint}): {e}")
 
-        raise RuntimeError("Failed to detect any supported protocol version")
+        msg = "Failed to detect any supported protocol version: " + "; ".join(errors)
+        raise RuntimeError(msg)
 
 
     @property
