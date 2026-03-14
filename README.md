@@ -1,3 +1,5 @@
+Fork of https://github.com/calvinbui/home-assistant-solplanet/fork to try and get HTTPS connections working correctly for new Voltx dongle
+
 # Solplanet / VoltX Inverter Integration
 
 This integration polls a local [Solplanet inverter dongle](https://solplanet.net/au/products/ai-dongle) (including [VoltX-branded devices](https://voltxenergy.com.au/)) and exposes Inverter, Battery and Smart Meter information for Home Assistant.
@@ -21,7 +23,7 @@ This repository is a fork of the upstream integration by `zbigniewmotyka`, with 
 
 #### With HACS
 
-[![Open in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=calvinbui&repository=home-assistant-solplanet&category=integration)
+[![Open in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=nigelarcher&repository=home-assistant-solplanet&category=integration)
 
 #### Manual installation
 

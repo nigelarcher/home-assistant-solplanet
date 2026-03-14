@@ -99,7 +99,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     # Network info (LAN/WLAN). The sample shows `info=2` for LAN.
                     try:
                         network_info = await self.__api.client.get("wlanget.cgi?info=2")
-                    except Exception as err:  # noqa: BLE001
+                    except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                         _LOGGER.debug("Failed fetching dongle network info: %s", err, exc_info=True)
                         network_info = prev_dongles.get(dongle_id, {}).get("network")
 
@@ -107,7 +107,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     warnings: dict | None = None
                     try:
                         warnings = await self.__api.client.get("getdevdata.cgi?device=1")
-                    except Exception as err:  # noqa: BLE001
+                    except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                         # Keep it lightweight: treat failures (including 404) as "no data".
                         _LOGGER.debug("Failed fetching dongle warnings: %s", err, exc_info=True)
                         warnings = prev_dongles.get(dongle_id, {}).get("warnings")
@@ -119,7 +119,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                             "warnings": warnings,
                         }
                     }
-                except Exception as err:  # noqa: BLE001
+                except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                     _LOGGER.debug("Failed fetching dongle info: %s", err, exc_info=True)
 
             try:
@@ -148,7 +148,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     power_reg = power_reg[0] if power_reg else None
                 if isinstance(power_reg, int):
                     inverter_power_on = power_reg == 1
-            except Exception as err:  # noqa: BLE001
+            except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                 _LOGGER.debug("Failed reading inverter power register: %s", err, exc_info=True)
 
             prev_inverters: dict = (
@@ -171,7 +171,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         "info": info,
                         "more_settings": more_settings,
                     }
-                except Exception as err:  # noqa: BLE001
+                except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                     # Keep last known inverter data on transient failures.
                     _LOGGER.debug(
                         "Failed fetching inverter data for %s: %s", isn, err, exc_info=True
@@ -206,7 +206,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     # getdefine.cgi is global (no sn parameter) so fetch it once
                     try:
                         schedule = await self.__api.get_schedule()
-                    except Exception as err:  # noqa: BLE001
+                    except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                         _LOGGER.debug("Failed fetching schedule: %s", err, exc_info=True)
 
                     # Read the 4-register block once and apply to all battery entries.
@@ -230,7 +230,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                                 "led_color_index": color_reg,
                                 "led_brightness": brightness_reg,
                             }
-                    except Exception as err:  # noqa: BLE001
+                    except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                         _LOGGER.debug("Failed reading modbus More Settings: %s", err, exc_info=True)
 
                     for isn in battery_isns:
@@ -253,7 +253,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                                 "more_settings": more_settings
                                 or prev_batteries.get(isn, {}).get("more_settings", {}),
                             }
-                        except Exception as err:  # noqa: BLE001
+                        except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                             _LOGGER.debug(
                                 "Failed fetching battery data for %s: %s",
                                 isn,
@@ -326,7 +326,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                                 continue
                             sn = meter.get("sn") or f"addr_{meter.get('address')}"
                             app_meters.setdefault(sn, {})["app_info"] = meter
-                except Exception as err:  # noqa: BLE001
+                except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                     _LOGGER.debug("Failed fetching app meter info: %s", err, exc_info=True)
 
                 try:
@@ -342,7 +342,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         target_sn = app_primary_sn or (next(iter(app_meters)) if app_meters else None)
                         if target_sn:
                             app_meters.setdefault(target_sn, {})["app_data"] = app_data
-                except Exception as err:  # noqa: BLE001
+                except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                     _LOGGER.debug("Failed fetching app meter data: %s", err, exc_info=True)
 
                 # V2 meter config (power limit / zero export)
@@ -360,7 +360,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                             app_meters.setdefault(target_sn, {})["meter_req"] = (
                                 meter_req_rsp.get("payload") or {}
                             )
-                except Exception as err:  # noqa: BLE001
+                except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                     _LOGGER.debug("Failed fetching meter config (get_meter_req): %s", err, exc_info=True)
 
                 try:
@@ -374,7 +374,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                             app_meters.setdefault(target_sn, {})["meter_power"] = (
                                 meter_power_rsp.get("payload") or {}
                             )
-                except Exception as err:  # noqa: BLE001
+                except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                     _LOGGER.debug(
                         "Failed fetching meter power config (get_meter_power_req): %s",
                         err,
@@ -408,7 +408,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         else:
                             # Keep previous payload on transient failures or stub responses.
                             meter_payload = prev_meter
-                    except Exception as err:  # noqa: BLE001
+                    except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                         _LOGGER.debug("Failed fetching legacy V2 meter data: %s", err, exc_info=True)
                         meter_payload = prev_meter
             else:
@@ -422,7 +422,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         meter_sn = meter_info.sn
                     if meter_sn:
                         meter_payload = {meter_sn: meter}
-                except Exception as err:  # noqa: BLE001
+                except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
                     _LOGGER.debug("Failed fetching meter data: %s", err, exc_info=True)
                     meter_payload = prev_meter
 
