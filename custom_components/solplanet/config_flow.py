@@ -39,7 +39,13 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     """
 
     client = SolplanetClient(data[CONF_HOST], async_get_clientsession(hass))
-    api = await SolplanetApiAdapter.create(client)
+
+    try:
+        api = await SolplanetApiAdapter.create(client)
+    except Exception as err:
+        _LOGGER.debug("Protocol detection failed for %s: %s", data[CONF_HOST], err, exc_info=True)
+        raise CannotConnect from err
+
     _LOGGER.info("Detected Solplanet protocol version: %s", api.version)
 
     try:

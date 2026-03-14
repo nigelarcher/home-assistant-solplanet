@@ -1,6 +1,5 @@
 """Solplanet API Adapter - automatically detects and uses V1 or V2 protocol."""
 
-import asyncio
 import logging
 from typing import Literal
 
@@ -88,7 +87,7 @@ class SolplanetApiAdapter:
                 await client.get(endpoint)
                 _LOGGER.debug("%s protocol detected successfully", version)
                 return version
-            except (Exception, asyncio.CancelledError) as e:
+            except Exception as e:
                 _LOGGER.debug("%s protocol detection failed: %s", version, e)
 
         raise RuntimeError("Failed to detect any supported protocol version")
