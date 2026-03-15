@@ -38,11 +38,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
-    client = SolplanetClient(data[CONF_HOST], async_get_clientsession(hass))
-    api = await SolplanetApiAdapter.create(client)
-    _LOGGER.info("Detected Solplanet protocol version: %s", api.version)
-
     try:
+        client = SolplanetClient(data[CONF_HOST], async_get_clientsession(hass))
+        api = await SolplanetApiAdapter.create(client)
+        _LOGGER.info("Detected Solplanet protocol version: %s", api.version)
         inverter_info = await api.get_inverter_info()
     except Exception as err:
         _LOGGER.debug("Exception occurred during adding device", exc_info=err)

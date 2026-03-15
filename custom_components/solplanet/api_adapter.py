@@ -76,6 +76,7 @@ class SolplanetApiAdapter:
         # API version configurations: (version_name, endpoint, scheme, port)
         api_configs = [
             ("v2", "getdev.cgi?device=2", "https", 443),
+            ("v2", "getdev.cgi?device=2", "http", 8484),
             ("v1", "invinfo.cgi", "http", 8484),
         ]
 
