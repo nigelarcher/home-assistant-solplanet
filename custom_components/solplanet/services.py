@@ -9,8 +9,6 @@ import voluptuous as vol
 from .client import ScheduleSlot, BatterySchedule
 from .const import DOMAIN, BATTERY_IDENTIFIER, METER_IDENTIFIER
 
-DAYS = ["Mon", "Tus", "Wen", "Thu", "Fri", "Sat", "Sun"]
-
 _LOGGER = logging.getLogger(__name__)
 
 async def get_isn_from_target(hass: HomeAssistant, target: dict) -> list[str]:
