@@ -103,8 +103,10 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 coordinator = data["coordinator"]
                 if isn in coordinator.data[BATTERY_IDENTIFIER]:
                     try:
-                        # Get current schedule
-                        current_schedule = coordinator.data[BATTERY_IDENTIFIER][isn]["schedule"]["slots"]
+                        # Get current schedule; "slots" may be absent if the schedule fetch
+                        # failed at startup (coordinator stores "schedule": {} in that case).
+                        schedule_data = coordinator.data[BATTERY_IDENTIFIER][isn].get("schedule") or {}
+                        current_schedule = schedule_data.get("slots") or {}
 
                         # Create new slot
                         slot = ScheduleSlot.from_time(
@@ -156,8 +158,8 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             for data in hass.data[DOMAIN].values():
                 coordinator = data["coordinator"]
                 if isn in coordinator.data[BATTERY_IDENTIFIER]:
-                    # Get current schedule
-                    current_schedule = coordinator.data[BATTERY_IDENTIFIER][isn]["schedule"]["slots"]
+                    schedule_data = coordinator.data[BATTERY_IDENTIFIER][isn].get("schedule") or {}
+                    current_schedule = schedule_data.get("slots") or {}
 
                     if call.data["day"] == "all":
                         new_slots = {day: [] for day in BatterySchedule.DAYS}
