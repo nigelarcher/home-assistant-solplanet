@@ -56,7 +56,7 @@ class SolplanetNumber(SolplanetEntity, NumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         """Set the selected value."""
         await self.entity_description.callback(value)
-        await self.coordinator.async_request_refresh()
+        self.coordinator.hass.async_create_task(self.coordinator.async_request_refresh())
 
 
 def create_battery_entites_description(

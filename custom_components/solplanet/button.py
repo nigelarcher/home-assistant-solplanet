@@ -41,7 +41,7 @@ class SolplanetButton(SolplanetEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
         await self.entity_description.callback()
-        await self.coordinator.async_request_refresh()
+        self.coordinator.hass.async_create_task(self.coordinator.async_request_refresh())
 
 
 def create_dongle_entities_description(

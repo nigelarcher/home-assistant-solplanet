@@ -69,7 +69,7 @@ class SolplanetSelect(SolplanetEntity, SelectEntity):
 
         if item is not None:
             await self.entity_description.callback(item)
-            await self.coordinator.async_request_refresh()
+            self.coordinator.hass.async_create_task(self.coordinator.async_request_refresh())
 
     def _refresh_options(self) -> None:
         self._select_options = self.entity_description.get_options()
