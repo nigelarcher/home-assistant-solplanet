@@ -23,31 +23,40 @@ def _build_target(call: ServiceCall) -> dict:
 
 async def get_isn_from_target(hass: HomeAssistant, target: dict) -> list[str]:
     """Get ISNs from target entity_ids or device_ids."""
-    isns = set()
+    isns: set[str] = set()
+    prefix = f"{BATTERY_IDENTIFIER}_"
+    device_reg = dr.async_get(hass)
 
-    # Handle entity_ids
+    def _isn_from_device(device: object) -> str | None:
+        for identifier in device.identifiers:
+            if identifier[0] == DOMAIN and identifier[1].startswith(prefix):
+                return identifier[1].removeprefix(prefix)
+        return None
+
+    # Route entity lookups through the device registry
     if "entity_id" in target:
         entity_reg = er.async_get(hass)
-        entity_ids = target["entity_id"] if isinstance(target["entity_id"], list) else [target["entity_id"]]
-
+        entity_ids = (
+            target["entity_id"]
+            if isinstance(target["entity_id"], list)
+            else [target["entity_id"]]
+        )
         for entity_id in entity_ids:
-            if entry := entity_reg.async_get(entity_id):
-                parts = entry.unique_id.split('_')
-                if len(parts) > 2:
-                    isns.add(parts[2])
+            if (entry := entity_reg.async_get(entity_id)) and entry.device_id:
+                if device := device_reg.async_get(entry.device_id):
+                    if isn := _isn_from_device(device):
+                        isns.add(isn)
 
-    # Handle device_ids
     if "device_id" in target:
-        device_reg = dr.async_get(hass)
-        device_ids = target["device_id"] if isinstance(target["device_id"], list) else [target["device_id"]]
-
+        device_ids = (
+            target["device_id"]
+            if isinstance(target["device_id"], list)
+            else [target["device_id"]]
+        )
         for device_id in device_ids:
             if device := device_reg.async_get(device_id):
-                for identifier in device.identifiers:
-                    if identifier[0] == DOMAIN:
-                        isn = identifier[1].replace("battery_", "")
-                        isns.add(isn)
-                        break
+                if isn := _isn_from_device(device):
+                    isns.add(isn)
 
     return list(isns)
 
@@ -55,6 +64,9 @@ async def get_isn_from_target(hass: HomeAssistant, target: dict) -> list[str]:
 async def get_meter_isn_from_target(hass: HomeAssistant, target: dict) -> list[str]:
     """Get meter serial(s) from target entity_ids or device_ids."""
     isns: set[str] = set()
+
+    prefix = f"{METER_IDENTIFIER}_"
+    device_reg = dr.async_get(hass)
 
     if "entity_id" in target:
         entity_reg = er.async_get(hass)
@@ -64,16 +76,14 @@ async def get_meter_isn_from_target(hass: HomeAssistant, target: dict) -> list[s
             else [target["entity_id"]]
         )
         for entity_id in entity_ids:
-            if entry := entity_reg.async_get(entity_id):
-                # Typical unique_id format:
-                # - inverter: solplanet_<isn>_<suffix>
-                # - others:  solplanet_<device_type>_<isn>_<suffix>
-                parts = (entry.unique_id or "").split("_")
-                if len(parts) >= 4 and parts[0] == "solplanet" and parts[1] == METER_IDENTIFIER:
-                    isns.add(parts[2])
+            if (entry := entity_reg.async_get(entity_id)) and entry.device_id:
+                if device := device_reg.async_get(entry.device_id):
+                    for identifier in device.identifiers:
+                        if identifier[0] == DOMAIN and identifier[1].startswith(prefix):
+                            isns.add(identifier[1].removeprefix(prefix))
+                            break
 
     if "device_id" in target:
-        device_reg = dr.async_get(hass)
         device_ids = (
             target["device_id"]
             if isinstance(target["device_id"], list)
@@ -85,8 +95,8 @@ async def get_meter_isn_from_target(hass: HomeAssistant, target: dict) -> list[s
                     if identifier[0] != DOMAIN:
                         continue
                     # Device identifiers are created as f"{METER_IDENTIFIER}_{meter_isn}".
-                    if identifier[1].startswith(f"{METER_IDENTIFIER}_"):
-                        isns.add(identifier[1].replace(f"{METER_IDENTIFIER}_", "", 1))
+                    if identifier[1].startswith(prefix):
+                        isns.add(identifier[1].removeprefix(prefix))
 
     return list(isns)
 
