@@ -11,6 +11,16 @@ from .const import DOMAIN, BATTERY_IDENTIFIER, METER_IDENTIFIER
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _build_target(call: ServiceCall) -> dict:
+    """Merge ServiceCall.target with legacy entity_id/device_id from call.data."""
+    target = dict(call.target)
+    if "entity_id" in call.data:
+        target["entity_id"] = call.data["entity_id"]
+    if "device_id" in call.data:
+        target["device_id"] = call.data["device_id"]
+    return target
+
 async def get_isn_from_target(hass: HomeAssistant, target: dict) -> list[str]:
     """Get ISNs from target entity_ids or device_ids."""
     isns = set()
@@ -85,11 +95,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def set_schedule_slots(call: ServiceCall) -> None:
         """Handle set_schedule_slots service."""
-        target = call.target if hasattr(call, 'target') else {}
-        if 'entity_id' in call.data:
-            target['entity_id'] = call.data['entity_id']
-        if 'device_id' in call.data:
-            target['device_id'] = call.data['device_id']
+        target = _build_target(call)
 
         isns = await get_isn_from_target(hass, target)
         if not isns:
@@ -141,11 +147,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def clear_schedule(call: ServiceCall) -> None:
         """Handle clear_schedule service."""
-        target = call.target if hasattr(call, 'target') else {}
-        if 'entity_id' in call.data:
-            target['entity_id'] = call.data['entity_id']
-        if 'device_id' in call.data:
-            target['device_id'] = call.data['device_id']
+        target = _build_target(call)
 
         isns = await get_isn_from_target(hass, target)
         if not isns:
@@ -199,11 +201,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def set_meter_limit_power(call: ServiceCall) -> None:
         """Configure meter power limit mode (ctrlType=0)."""
-        target = call.target if hasattr(call, "target") else {}
-        if "entity_id" in call.data:
-            target["entity_id"] = call.data["entity_id"]
-        if "device_id" in call.data:
-            target["device_id"] = call.data["device_id"]
+        target = _build_target(call)
 
         limit_type = int(call.data["limitType"])
         payload: dict = {
@@ -247,11 +245,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def set_meter_limit_current(call: ServiceCall) -> None:
         """Configure meter current limit mode (ctrlType=1)."""
-        target = call.target if hasattr(call, "target") else {}
-        if "entity_id" in call.data:
-            target["entity_id"] = call.data["entity_id"]
-        if "device_id" in call.data:
-            target["device_id"] = call.data["device_id"]
+        target = _build_target(call)
 
         payload: dict = {
             "regulate": 10,
@@ -274,11 +268,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def set_meter_zero_power(call: ServiceCall) -> None:
         """Configure meter zero power mode (ctrlType=2)."""
-        target = call.target if hasattr(call, "target") else {}
-        if "entity_id" in call.data:
-            target["entity_id"] = call.data["entity_id"]
-        if "device_id" in call.data:
-            target["device_id"] = call.data["device_id"]
+        target = _build_target(call)
 
         payload: dict = {
             "regulate": 10,
@@ -290,11 +280,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
     async def disable_meter_power_limit(call: ServiceCall) -> None:
         """Disable meter power limit control (regulate=5)."""
-        target = call.target if hasattr(call, "target") else {}
-        if "entity_id" in call.data:
-            target["entity_id"] = call.data["entity_id"]
-        if "device_id" in call.data:
-            target["device_id"] = call.data["device_id"]
+        target = _build_target(call)
 
         await _apply_meter_payload(target, {"regulate": 5})
 
