@@ -105,7 +105,7 @@ class SolplanetEntity(CoordinatorEntity, Entity):
                 data = (
                     data[int(path_item)]
                     if isinstance(data, list)
-                    else getattr(data, str(path_item))
+                    else getattr(data, str(path_item), None)
                     if hasattr(data, "__dict__")
                     else data.get(path_item)
                 )
