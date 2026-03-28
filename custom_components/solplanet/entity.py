@@ -3,7 +3,6 @@
 from collections import abc
 from dataclasses import dataclass
 import logging
-import re
 from typing import Any
 
 from homeassistant.core import callback
@@ -111,8 +110,6 @@ class SolplanetEntity(CoordinatorEntity, Entity):
                     else data.get(path_item)
                 )
             else:
-                if self.entity_description.data_field_path[0] == "selected":
-                    _LOGGER.warning("Selected: %r", type(data))
                 return None
 
         if self.entity_description.data_field_value_mapper is not None:
