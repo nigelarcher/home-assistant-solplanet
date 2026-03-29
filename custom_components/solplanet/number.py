@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import SolplanetConfigEntry
-from .const import BATTERY_IDENTIFIER, DOMAIN
+from .const import BATTERY_IDENTIFIER, BATTERY_MODELS_WITH_LED, DOMAIN
 from .coordinator import SolplanetDataUpdateCoordinator
 from .entity import SolplanetEntity, SolplanetEntityDescription
 
@@ -61,7 +61,14 @@ def create_battery_entities_description(
     coordinator: SolplanetDataUpdateCoordinator, isn: str
 ) -> list[SolplanetNumberEntityDescription]:
     """Create entities for battery."""
-    return [
+    battery_info = coordinator.data[BATTERY_IDENTIFIER][isn].get("info")
+    has_led = (
+        (battery_info.muf, battery_info.mod) in BATTERY_MODELS_WITH_LED
+        if battery_info and battery_info.muf is not None and battery_info.mod is not None
+        else False
+    )
+
+    entities = [
         SolplanetNumberEntityDescription(
             key=f"{isn}_soc_max",
             name="SOC max",
@@ -112,20 +119,26 @@ def create_battery_entities_description(
             native_unit_of_measurement=UnitOfPower.WATT,
             callback=lambda value: coordinator.set_battery_schedule_pout(isn, int(value)),
         ),
-        SolplanetNumberEntityDescription(
-            key=f"{isn}_led_brightness",
-            name="LED Brightness",
-            icon="mdi:brightness-6",
-            data_field_device_type=BATTERY_IDENTIFIER,
-            data_field_data_type="more_settings",
-            data_field_path=["led_brightness"],
-            native_min_value=0,
-            native_max_value=100,
-            native_step=1,
-            native_unit_of_measurement=PERCENTAGE,
-            callback=lambda value: coordinator.set_battery_led_brightness(int(value)),
-        ),
     ]
+
+    if has_led:
+        entities.append(
+            SolplanetNumberEntityDescription(
+                key=f"{isn}_led_brightness",
+                name="LED Brightness",
+                icon="mdi:brightness-6",
+                data_field_device_type=BATTERY_IDENTIFIER,
+                data_field_data_type="more_settings",
+                data_field_path=["led_brightness"],
+                native_min_value=0,
+                native_max_value=100,
+                native_step=1,
+                native_unit_of_measurement=PERCENTAGE,
+                callback=lambda value: coordinator.set_battery_led_brightness(int(value)),
+            )
+        )
+
+    return entities
 
 
 async def async_setup_entry(

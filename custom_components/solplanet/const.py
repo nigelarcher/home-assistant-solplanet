@@ -329,6 +329,14 @@ BATTERY_MODEL_NAMES: dict[tuple[int, int], str] = {
     (200, 2): "Com(Lithium Valley)_HV",
 }
 
+# Batteries that have LED control (batteryLight == 1 in assets/battery_type.json).
+BATTERY_MODELS_WITH_LED: frozenset[tuple[int, int]] = frozenset(
+    {
+        (5, 12),  # ASW5120-LB-G3
+        (103, 3),  # RV5120-LB-G3
+    }
+)
+
 # from (assets/meter.json.
 # corresponds to `equipModel` field in the V2 meter app_info response.
 METER_MODEL_NAMES: dict[int, str] = {

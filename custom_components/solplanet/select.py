@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import SolplanetConfigEntry
-from .const import BATTERY_IDENTIFIER, DOMAIN
+from .const import BATTERY_IDENTIFIER, BATTERY_MODELS_WITH_LED, DOMAIN
 from .coordinator import SolplanetDataUpdateCoordinator
 from .entity import SolplanetEntity, SolplanetEntityDescription
 
@@ -108,7 +108,14 @@ def create_battery_entities_description(
 
         return [SolplanetSelectOption(label=_format_led_color_label(i), value=i) for i in sorted(indices)]
 
-    return [
+    battery_info = coordinator.data[BATTERY_IDENTIFIER][isn].get("info")
+    has_led = (
+        (battery_info.muf, battery_info.mod) in BATTERY_MODELS_WITH_LED
+        if battery_info and battery_info.muf is not None and battery_info.mod is not None
+        else False
+    )
+
+    entities = [
         SolplanetSelectEntityDescription(
             key=f"{isn}_work_mode",
             name="Work mode",
@@ -122,28 +129,34 @@ def create_battery_entities_description(
             ],
             callback=lambda option: coordinator.set_battery_work_mode(isn, option.value),
         ),
-        SolplanetSelectEntityDescription(
-            key=f"{isn}_led_color",
-            name="LED Color",
-            icon="mdi:palette",
-            unique_id_suffix="led_color",
-            data_field_device_type=BATTERY_IDENTIFIER,
-            data_field_data_type="more_settings",
-            data_field_path=["led_color_index"],
-            # Entity expects a string option; we store int in value and use label for display.
-            get_options=_get_led_color_options,
-            callback=lambda option: coordinator.set_battery_led_color_index(int(option.value)),
-            data_field_value_mapper=lambda v: _format_led_color_label(int(v)) if v is not None else None,
-            attributes_fn=lambda ms: {
-                "index": ms.get("led_color_index") if isinstance(ms, dict) else None,
-                "hex": (
-                    LED_COLOR_MAP.get(ms.get("led_color_index"), {}).get("hex")
-                    if isinstance(ms, dict)
-                    else None
-                ),
-            },
-        ),
     ]
+
+    if has_led:
+        entities.append(
+            SolplanetSelectEntityDescription(
+                key=f"{isn}_led_color",
+                name="LED Color",
+                icon="mdi:palette",
+                unique_id_suffix="led_color",
+                data_field_device_type=BATTERY_IDENTIFIER,
+                data_field_data_type="more_settings",
+                data_field_path=["led_color_index"],
+                # Entity expects a string option; we store int in value and use label for display.
+                get_options=_get_led_color_options,
+                callback=lambda option: coordinator.set_battery_led_color_index(int(option.value)),
+                data_field_value_mapper=lambda v: _format_led_color_label(int(v)) if v is not None else None,
+                attributes_fn=lambda ms: {
+                    "index": ms.get("led_color_index") if isinstance(ms, dict) else None,
+                    "hex": (
+                        LED_COLOR_MAP.get(ms.get("led_color_index"), {}).get("hex")
+                        if isinstance(ms, dict)
+                        else None
+                    ),
+                },
+            )
+        )
+
+    return entities
 
 
 async def async_setup_entry(
