@@ -76,7 +76,7 @@ class SolplanetSelect(SolplanetEntity, SelectEntity):
         self._attr_options = [x.label for x in self._select_options]
 
 
-def create_battery_entites_description(
+def create_battery_entities_description(
     coordinator: SolplanetDataUpdateCoordinator, isn: str
 ) -> list[SolplanetSelectEntityDescription]:
     """Create entities for battery."""
@@ -170,7 +170,7 @@ async def async_setup_entry(
                 isn=isn,
                 coordinator=coordinator,
             )
-            for entity_description in create_battery_entites_description(
+            for entity_description in create_battery_entities_description(
                 coordinator, isn
             )
         )

@@ -133,7 +133,7 @@ def _create_dict_set_mapper(
     return map_set_dict
 
 
-def create_inverter_entites_description(
+def create_inverter_entities_description(
     coordinator: SolplanetDataUpdateCoordinator, isn: str
 ) -> list[SolplanetSensorEntityDescription]:
     """Create entities for inverter."""
@@ -361,7 +361,7 @@ def create_inverter_entites_description(
     return sensors
 
 
-def create_meter_entites_description(
+def create_meter_entities_description(
     coordinator: SolplanetDataUpdateCoordinator, isn: str
 ) -> list[SolplanetSensorEntityDescription]:
     """Create entities for meter."""
@@ -600,7 +600,7 @@ def create_meter_entites_description(
     return sensors
 
 
-def create_dongle_entites_description(
+def create_dongle_entities_description(
     coordinator: SolplanetDataUpdateCoordinator, dongle_id: str
 ) -> list[SolplanetSensorEntityDescription]:
     """Create diagnostic entities for the dongle (V2)."""
@@ -692,7 +692,7 @@ def create_dongle_entites_description(
     ]
 
 
-def create_battery_entites_description(
+def create_battery_entities_description(
     coordinator: SolplanetDataUpdateCoordinator, isn: str
 ) -> list[SolplanetSensorEntityDescription]:
     """Create entities for battery."""
@@ -1082,7 +1082,7 @@ async def async_setup_entry(
                 isn=dongle_id,
                 coordinator=coordinator,
             )
-            for entity_description in create_dongle_entites_description(
+            for entity_description in create_dongle_entities_description(
                 coordinator, dongle_id
             )
         )
@@ -1094,7 +1094,7 @@ async def async_setup_entry(
                 isn=isn,
                 coordinator=coordinator,
             )
-            for entity_description in create_inverter_entites_description(
+            for entity_description in create_inverter_entities_description(
                 coordinator, isn
             )
         )
@@ -1106,7 +1106,7 @@ async def async_setup_entry(
                 isn=isn,
                 coordinator=coordinator,
             )
-            for entity_description in create_battery_entites_description(
+            for entity_description in create_battery_entities_description(
                 coordinator, isn
             )
         )
@@ -1118,7 +1118,7 @@ async def async_setup_entry(
                 isn=isn,
                 coordinator=coordinator,
             )
-            for entity_description in create_meter_entites_description(coordinator, isn)
+            for entity_description in create_meter_entities_description(coordinator, isn)
         )
 
     # Always add entities. If the inverter is slow/sleeping at startup, filtering here would
