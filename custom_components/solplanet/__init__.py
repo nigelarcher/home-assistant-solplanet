@@ -16,6 +16,8 @@ from .api_adapter import SolplanetApiAdapter
 from .client import SolplanetClient
 from .const import (
     BATTERY_IDENTIFIER,
+    BATTERY_MANUFACTURER_NAMES,
+    BATTERY_MODEL_NAMES,
     CONF_INTERVAL,
     DEFAULT_INTERVAL,
     DOMAIN,
@@ -123,11 +125,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
             else battery_info.isn
         )
 
+        battery_manufacturer = BATTERY_MANUFACTURER_NAMES.get(battery_info.muf) if battery_info.muf is not None else None
+        battery_model = BATTERY_MODEL_NAMES.get((battery_info.muf, battery_info.mod)) if battery_info.muf is not None and battery_info.mod is not None else None
+
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             # Keep identifiers stable (and aligned with `device_info`) to avoid orphaning entities.
             identifiers={(DOMAIN, f"{BATTERY_IDENTIFIER}_{battery_info.isn or ''}")},
-            name="Battery",
+            name=battery_model or "Battery",
+            manufacturer=battery_manufacturer,
+            model=battery_model,
             serial_number=battery_serial,
             sw_version=battery_info.battery.softwarever if battery_info.battery else "",
             hw_version=battery_info.battery.hardwarever if battery_info.battery else "",
