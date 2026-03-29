@@ -86,7 +86,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             identifiers={(DOMAIN, f"{DONGLE_IDENTIFIER}_{dongle_id}")},
-            name=f"{dongle.get('nam') or 'Solplanet Dongle'} ({dongle_id})",
+            name=dongle.get("nam") or "Solplanet Dongle",
             manufacturer=dongle.get("brd") or dongle.get("muf") or MANUFACTURER,
             model=dongle.get("mod") or dongle.get("hw") or "Dongle",
             serial_number=dongle.get("psn") or dongle_id,
@@ -100,7 +100,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             identifiers={(DOMAIN, inverter_info.isn or "")},
-            name=f"{inverter_info.model} ({inverter_info.isn})",
+            name=inverter_info.model,
             model=inverter_info.model,
             manufacturer=MANUFACTURER,
             serial_number=inverter_info.isn,
@@ -122,7 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
             config_entry_id=entry.entry_id,
             # Keep identifiers stable (and aligned with `device_info`) to avoid orphaning entities.
             identifiers={(DOMAIN, f"{BATTERY_IDENTIFIER}_{battery_info.isn or ''}")},
-            name=f"Battery ({battery_serial})",
+            name="Battery",
             serial_number=battery_serial,
             sw_version=battery_info.battery.softwarever if battery_info.battery else "",
             hw_version=battery_info.battery.hardwarever if battery_info.battery else "",
@@ -169,7 +169,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
                 model_name = None
 
             name_prefix = model_name or "Meter"
-            name = f"{name_prefix} ({serial})"
+            name = name_prefix
 
             device_registry.async_get_or_create(
                 config_entry_id=entry.entry_id,
