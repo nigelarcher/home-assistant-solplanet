@@ -241,6 +241,9 @@ class ModbusApiMixin:
         _LOGGER.debug("Modbus RTU response frame: %s", response)
         _LOGGER.debug("Modbus RTU request time: %.2f seconds", elapsed_time)
 
+        if not isinstance(response, dict) or "data" not in response:
+            raise RuntimeError(f"Unexpected Modbus response from fdbg.cgi: {response!r}")
+
         data = ModbusRtuFrameGenerator().decode_response(
             response_hex=response["data"], data_type=data_type
         )
