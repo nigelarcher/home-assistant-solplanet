@@ -19,9 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
-class SolplanetNumberEntityDescription(
-    SolplanetEntityDescription, NumberEntityDescription
-):
+class SolplanetNumberEntityDescription(SolplanetEntityDescription, NumberEntityDescription):
     """Describe Solplanet number entity."""
 
     callback: abc.Callable[[float], Any]
@@ -147,9 +145,7 @@ async def async_setup_entry(
                 isn=isn,
                 coordinator=coordinator,
             )
-            for entity_description in create_battery_entities_description(
-                coordinator, isn
-            )
+            for entity_description in create_battery_entities_description(coordinator, isn)
         )
 
     # Always add entities; values may be missing during startup/inverter sleep.

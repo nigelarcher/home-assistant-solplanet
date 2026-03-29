@@ -90,9 +90,9 @@ class SolplanetEntity(CoordinatorEntity, Entity):
     def _get_value_from_coordinator(self) -> float | int | str | None:
         """Return the value from coordinator data."""
         try:
-            data = self.coordinator.data[self.entity_description.data_field_device_type][
-                self._isn
-            ][self.entity_description.data_field_data_type]
+            data = self.coordinator.data[self.entity_description.data_field_device_type][self._isn][
+                self.entity_description.data_field_data_type
+            ]
         except KeyError:
             raise InverterInSleepModeError from None
 
@@ -122,10 +122,7 @@ class SolplanetEntity(CoordinatorEntity, Entity):
             _LOGGER.debug("NaN value received from Inverter")
             return None
 
-        if (
-            data is not None
-            and self.entity_description.data_field_value_multiply is not None
-        ):
+        if data is not None and self.entity_description.data_field_value_multiply is not None:
             data = data * self.entity_description.data_field_value_multiply
 
         return data
@@ -177,9 +174,9 @@ class SolplanetEntity(CoordinatorEntity, Entity):
             return None
 
         try:
-            data = self.coordinator.data[self.entity_description.data_field_device_type][
-                self._isn
-            ][self.entity_description.data_field_data_type]
+            data = self.coordinator.data[self.entity_description.data_field_device_type][self._isn][
+                self.entity_description.data_field_data_type
+            ]
         except KeyError:
             return None
 

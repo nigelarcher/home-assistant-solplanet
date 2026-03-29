@@ -158,7 +158,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
                 51: "WND-WR-MB",
             }
 
-            addr = app_info.get("address")
             serial = app_info.get("sn") or meter_isn
 
             equip_model_raw = app_info.get("equipModel")

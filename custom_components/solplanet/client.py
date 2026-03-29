@@ -244,9 +244,7 @@ class ModbusApiMixin:
         if not isinstance(response, dict) or "data" not in response:
             raise RuntimeError(f"Unexpected Modbus response from fdbg.cgi: {response!r}")
 
-        data = ModbusRtuFrameGenerator().decode_response(
-            response_hex=response["data"], data_type=data_type
-        )
+        data = ModbusRtuFrameGenerator().decode_response(response_hex=response["data"], data_type=data_type)
         _LOGGER.debug("Modbus RTU response decoded: %s", data)
 
         return data
@@ -255,6 +253,7 @@ class ModbusApiMixin:
 # ============================================================================
 # Helper Classes
 # ============================================================================
+
 
 @dataclass
 class BatteryWorkMode:
@@ -314,13 +313,14 @@ class BatteryWorkModes:
 @dataclass
 class ScheduleSlot:
     """Represent a battery schedule time slot."""
+
     start_hour: int
     start_minute: int
     duration: int
     mode: str
 
     @classmethod
-    def from_raw(cls, code: int) -> 'ScheduleSlot | None':
+    def from_raw(cls, code: int) -> "ScheduleSlot | None":
         """Create slot from raw inverter code."""
         if code == 0:
             return None
@@ -334,13 +334,13 @@ class ScheduleSlot:
             start_hour=hour_bits,
             start_minute=30 if half_hour_bit else 0,
             duration=duration_bits + 1,
-            mode="discharge" if discharge_bit else "charge"
+            mode="discharge" if discharge_bit else "charge",
         )
 
     @classmethod
-    def from_time(cls, start: str, duration: int, mode: str) -> 'ScheduleSlot':
+    def from_time(cls, start: str, duration: int, mode: str) -> "ScheduleSlot":
         """Create slot from time string (HH:MM), duration and mode."""
-        hour, minute = map(int, start.split(':'))
+        hour, minute = map(int, start.split(":"))
         if minute not in [0, 30]:
             raise ValueError("Minutes must be 0 or 30")
         if not 0 <= hour <= 23:
@@ -350,23 +350,18 @@ class ScheduleSlot:
         if mode not in ["charge", "discharge"]:
             raise ValueError("Mode must be 'charge' or 'discharge'")
 
-        return cls(
-            start_hour=hour,
-            start_minute=minute,
-            duration=duration,
-            mode=mode
-        )
+        return cls(start_hour=hour, start_minute=minute, duration=duration, mode=mode)
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'ScheduleSlot':
+    def from_dict(cls, data: dict) -> "ScheduleSlot":
         """Create slot from dictionary with start, duration, mode."""
-        if isinstance(data.get('start'), str):
-            return cls.from_time(data['start'], data['duration'], data['mode'])
+        if isinstance(data.get("start"), str):
+            return cls.from_time(data["start"], data["duration"], data["mode"])
         return cls(
-            start_hour=data['start_hour'],
-            start_minute=data['start_minute'],
-            duration=data['duration'],
-            mode=data['mode']
+            start_hour=data["start_hour"],
+            start_minute=data["start_minute"],
+            duration=data["duration"],
+            mode=data["mode"],
         )
 
     def to_raw(self) -> int:
@@ -379,11 +374,13 @@ class ScheduleSlot:
         HALF = 0x1E0000
         DURATION = 0x3C00
 
-        return (BASE +
-                (self.start_hour * HOUR) +
-                ((self.start_minute // 30) * HALF) +
-                ((self.duration - 1) * DURATION) +
-                (1 if self.mode == "discharge" else 0))
+        return (
+            BASE
+            + (self.start_hour * HOUR)
+            + ((self.start_minute // 30) * HALF)
+            + ((self.duration - 1) * DURATION)
+            + (1 if self.mode == "discharge" else 0)
+        )
 
     def to_dict(self) -> dict:
         """Convert slot to dictionary format."""
@@ -391,7 +388,7 @@ class ScheduleSlot:
             "start_hour": self.start_hour,
             "start_minute": self.start_minute,
             "duration": self.duration,
-            "mode": self.mode
+            "mode": self.mode,
         }
 
     def human_readable(self, fmt: str = "{start} - {end} ({mode})") -> str:
@@ -404,17 +401,19 @@ class ScheduleSlot:
         return fmt.format(
             start=f"{self.start_hour:02d}:{self.start_minute:02d}",
             end=f"{end_hour:02d}:{self.start_minute:02d}",
-            mode=self.mode
+            mode=self.mode,
         )
 
     def validate_duration(self) -> None:
         """Validate slot duration doesn't cross midnight."""
         end_hour = self.start_hour + self.duration
         if end_hour > 24:
-            raise ValueError(f"Slot ending at {end_hour}:00 crosses midnight. At {self.start_hour}:00 max duration is {24-self.start_hour} hours")
+            raise ValueError(
+                f"Slot ending at {end_hour}:00 crosses midnight. At {self.start_hour}:00 max duration is {24 - self.start_hour} hours"
+            )
 
     @staticmethod
-    def validate_slots(slots: list['ScheduleSlot']) -> None:
+    def validate_slots(slots: list["ScheduleSlot"]) -> None:
         """Validate a list of slots."""
         if len(slots) > 6:
             raise ValueError("Maximum 6 slots per day allowed")
@@ -431,12 +430,17 @@ class ScheduleSlot:
                 next_start = next_slot.start_hour
                 next_start_mins = next_slot.start_minute
 
-                if (current_end > next_start) or (current_end == next_start and current_end_mins > next_start_mins):
-                    raise ValueError(f"Slot {slot.human_readable()} overlaps with {next_slot.human_readable()}")
+                if (current_end > next_start) or (
+                    current_end == next_start and current_end_mins > next_start_mins
+                ):
+                    raise ValueError(
+                        f"Slot {slot.human_readable()} overlaps with {next_slot.human_readable()}"
+                    )
 
 
 class BatterySchedule:
     """Helper for battery schedule operations."""
+
     DAYS = ["Mon", "Tus", "Wen", "Thu", "Fri", "Sat", "Sun"]
 
     @staticmethod
@@ -444,7 +448,8 @@ class BatterySchedule:
         """Decode raw schedule into slots."""
         return {
             day: [
-                slot for code in raw_schedule.get(day, [])[:6]  # Limit to 6 slots
+                slot
+                for code in raw_schedule.get(day, [])[:6]  # Limit to 6 slots
                 if (slot := ScheduleSlot.from_raw(code)) is not None
             ]
             for day in BatterySchedule.DAYS
@@ -465,13 +470,14 @@ class BatterySchedule:
                 if day_slots  # Only include days with slots
             },
             "Pin": pin,
-            "Pout": pout
+            "Pout": pout,
         }
 
 
 # ============================================================================
 # Response Models (shared by both V1 and V2 APIs)
 # ============================================================================
+
 
 @dataclass
 class GetInverterDataResponse:
@@ -932,8 +938,7 @@ class SolplanetApiV1(ModbusApiMixin):
         _LOGGER.debug("Getting inverter info (V1)")
         response = await self.client.get("invinfo.cgi")
         response["inv"] = [
-            self._create_class_from_dict(GetInverterInfoItemResponse, item)
-            for item in response["inv"]
+            self._create_class_from_dict(GetInverterInfoItemResponse, item) for item in response["inv"]
         ]
         return self._create_class_from_dict(GetInverterInfoResponse, response)
 
@@ -982,8 +987,7 @@ class SolplanetApiV2(ModbusApiMixin):
         _LOGGER.debug("Getting inverter info")
         response = await self.client.get("getdev.cgi?device=2")
         response["inv"] = [
-            self._create_class_from_dict(GetInverterInfoItemResponse, item)
-            for item in response["inv"]
+            self._create_class_from_dict(GetInverterInfoItemResponse, item) for item in response["inv"]
         ]
         return self._create_class_from_dict(GetInverterInfoResponse, response)
 
@@ -1081,9 +1085,7 @@ class SolplanetApiV2(ModbusApiMixin):
             "Pout": raw_response.get("Pout", 0),
         }
 
-    async def set_schedule_power(
-        self, pin: int | None = None, pout: int | None = None
-    ) -> None:
+    async def set_schedule_power(self, pin: int | None = None, pout: int | None = None) -> None:
         """Set battery schedule power configuration."""
         current = await self.get_schedule()
         schedule = BatterySchedule.encode_schedule(
@@ -1127,6 +1129,7 @@ class SolplanetApiV2(ModbusApiMixin):
         """Create dataclass instance from dict."""
         allowed = {f.name for f in fields(cls)}
         return cls(**{k: v for k, v in data.items() if k in allowed})
+
 
 # Alias for backward compatibility
 SolplanetApi = SolplanetApiV2

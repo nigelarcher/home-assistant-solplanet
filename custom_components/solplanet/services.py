@@ -1,4 +1,5 @@
 """Services for Solplanet integration."""
+
 from __future__ import annotations
 
 import logging
@@ -21,6 +22,7 @@ def _build_target(call: ServiceCall) -> dict:
         target["device_id"] = call.data["device_id"]
     return target
 
+
 async def get_isn_from_target(hass: HomeAssistant, target: dict) -> list[str]:
     """Get ISNs from target entity_ids or device_ids."""
     isns: set[str] = set()
@@ -36,11 +38,7 @@ async def get_isn_from_target(hass: HomeAssistant, target: dict) -> list[str]:
     # Route entity lookups through the device registry
     if "entity_id" in target:
         entity_reg = er.async_get(hass)
-        entity_ids = (
-            target["entity_id"]
-            if isinstance(target["entity_id"], list)
-            else [target["entity_id"]]
-        )
+        entity_ids = target["entity_id"] if isinstance(target["entity_id"], list) else [target["entity_id"]]
         for entity_id in entity_ids:
             if (entry := entity_reg.async_get(entity_id)) and entry.device_id:
                 if device := device_reg.async_get(entry.device_id):
@@ -48,11 +46,7 @@ async def get_isn_from_target(hass: HomeAssistant, target: dict) -> list[str]:
                         isns.add(isn)
 
     if "device_id" in target:
-        device_ids = (
-            target["device_id"]
-            if isinstance(target["device_id"], list)
-            else [target["device_id"]]
-        )
+        device_ids = target["device_id"] if isinstance(target["device_id"], list) else [target["device_id"]]
         for device_id in device_ids:
             if device := device_reg.async_get(device_id):
                 if isn := _isn_from_device(device):
@@ -70,11 +64,7 @@ async def get_meter_isn_from_target(hass: HomeAssistant, target: dict) -> list[s
 
     if "entity_id" in target:
         entity_reg = er.async_get(hass)
-        entity_ids = (
-            target["entity_id"]
-            if isinstance(target["entity_id"], list)
-            else [target["entity_id"]]
-        )
+        entity_ids = target["entity_id"] if isinstance(target["entity_id"], list) else [target["entity_id"]]
         for entity_id in entity_ids:
             if (entry := entity_reg.async_get(entity_id)) and entry.device_id:
                 if device := device_reg.async_get(entry.device_id):
@@ -84,11 +74,7 @@ async def get_meter_isn_from_target(hass: HomeAssistant, target: dict) -> list[s
                             break
 
     if "device_id" in target:
-        device_ids = (
-            target["device_id"]
-            if isinstance(target["device_id"], list)
-            else [target["device_id"]]
-        )
+        device_ids = target["device_id"] if isinstance(target["device_id"], list) else [target["device_id"]]
         for device_id in device_ids:
             if device := device_reg.async_get(device_id):
                 for identifier in device.identifiers:
@@ -99,6 +85,7 @@ async def get_meter_isn_from_target(hass: HomeAssistant, target: dict) -> list[s
                         isns.add(identifier[1].removeprefix(prefix))
 
     return list(isns)
+
 
 async def async_setup_services(hass: HomeAssistant) -> None:
     """Set up services for Solplanet integration."""
@@ -126,7 +113,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                         slot = ScheduleSlot.from_time(
                             start=f"{call.data['start_hour']:02d}:{call.data['start_minute']:02d}",
                             duration=call.data["duration"],
-                            mode=call.data["mode"]
+                            mode=call.data["mode"],
                         )
 
                         # Get existing slots for the day
@@ -137,7 +124,9 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                             raise vol.Invalid("Cannot add more than 6 slots per day")
 
                         day_slots.append(slot)
-                        ScheduleSlot.validate_slots(day_slots)  # This will raise ValueError for validation issues
+                        ScheduleSlot.validate_slots(
+                            day_slots
+                        )  # This will raise ValueError for validation issues
 
                         new_slots[call.data["day"]] = day_slots
                         await coordinator.set_battery_schedule_slots(isn, new_slots)
@@ -299,26 +288,30 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         DOMAIN,
         "set_schedule_slots",
         set_schedule_slots,
-        schema=vol.Schema({
-            vol.Optional("entity_id"): vol.Any(str, [str]),
-            vol.Optional("device_id"): vol.Any(str, [str]),
-            vol.Required("day"): vol.In(BatterySchedule.DAYS),
-            vol.Required("start_hour"): vol.All(vol.Coerce(int), vol.Range(min=0, max=23)),
-            vol.Required("start_minute"): vol.In([0, 30]),
-            vol.Required("duration"): vol.All(vol.Coerce(int), vol.Range(min=1, max=4)),
-            vol.Required("mode"): vol.In(["charge", "discharge"])
-        })
+        schema=vol.Schema(
+            {
+                vol.Optional("entity_id"): vol.Any(str, [str]),
+                vol.Optional("device_id"): vol.Any(str, [str]),
+                vol.Required("day"): vol.In(BatterySchedule.DAYS),
+                vol.Required("start_hour"): vol.All(vol.Coerce(int), vol.Range(min=0, max=23)),
+                vol.Required("start_minute"): vol.In([0, 30]),
+                vol.Required("duration"): vol.All(vol.Coerce(int), vol.Range(min=1, max=4)),
+                vol.Required("mode"): vol.In(["charge", "discharge"]),
+            }
+        ),
     )
 
     hass.services.async_register(
         DOMAIN,
         "clear_schedule",
         clear_schedule,
-        schema=vol.Schema({
-            vol.Optional("entity_id"): vol.Any(str, [str]),
-            vol.Optional("device_id"): vol.Any(str, [str]),
-            vol.Required("day"): vol.In(["all"] + BatterySchedule.DAYS)
-        })
+        schema=vol.Schema(
+            {
+                vol.Optional("entity_id"): vol.Any(str, [str]),
+                vol.Optional("device_id"): vol.Any(str, [str]),
+                vol.Required("day"): vol.In(["all"] + BatterySchedule.DAYS),
+            }
+        ),
     )
 
     hass.services.async_register(

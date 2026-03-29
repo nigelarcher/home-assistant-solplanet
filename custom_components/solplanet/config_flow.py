@@ -90,9 +90,7 @@ class SolplanetConfigFlow(ConfigFlow, domain=DOMAIN):
         """Get the options flow for this handler."""
         return SolplanetOptionsFlow(config_entry)
 
-    async def async_step_reconfigure(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle reconfiguration of the integration."""
         entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
 
@@ -116,9 +114,7 @@ class SolplanetConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=schema,
         )
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -136,9 +132,7 @@ class SolplanetConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured(updates={CONF_HOST: user_input[CONF_HOST]})
                 return self.async_create_entry(title=info["title"], data=user_input)
 
-        return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
-        )
+        return self.async_show_form(step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors)
 
 
 class SolplanetOptionsFlow(OptionsFlow):
@@ -150,9 +144,7 @@ class SolplanetOptionsFlow(OptionsFlow):
         # Store the entry on our own attribute.
         self._config_entry = config_entry
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             # Update the config entry data with new interval

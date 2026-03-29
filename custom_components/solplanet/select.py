@@ -27,9 +27,7 @@ class SolplanetSelectOption:
 
 
 @dataclass(frozen=True, kw_only=True)
-class SolplanetSelectEntityDescription(
-    SolplanetEntityDescription, SelectEntityDescription
-):
+class SolplanetSelectEntityDescription(SolplanetEntityDescription, SelectEntityDescription):
     """Describe Solplanet select entity."""
 
     callback: abc.Callable[[SolplanetSelectOption], Any]
@@ -108,10 +106,7 @@ def create_battery_entities_description(
         if isinstance(current, int):
             indices.add(current)
 
-        return [
-            SolplanetSelectOption(label=_format_led_color_label(i), value=i)
-            for i in sorted(indices)
-        ]
+        return [SolplanetSelectOption(label=_format_led_color_label(i), value=i) for i in sorted(indices)]
 
     return [
         SolplanetSelectEntityDescription(
@@ -125,9 +120,7 @@ def create_battery_entities_description(
                 SolplanetSelectOption(label=x.name, value=x)
                 for x in coordinator.data[BATTERY_IDENTIFIER][isn]["work_modes"]["all"]
             ],
-            callback=lambda option: coordinator.set_battery_work_mode(
-                isn, option.value
-            ),
+            callback=lambda option: coordinator.set_battery_work_mode(isn, option.value),
         ),
         SolplanetSelectEntityDescription(
             key=f"{isn}_led_color",
@@ -170,9 +163,7 @@ async def async_setup_entry(
                 isn=isn,
                 coordinator=coordinator,
             )
-            for entity_description in create_battery_entities_description(
-                coordinator, isn
-            )
+            for entity_description in create_battery_entities_description(coordinator, isn)
         )
 
     # Always add entities; values may be missing during startup/inverter sleep.
