@@ -1,4 +1,4 @@
-"""Solplanet sensors platform."""
+"""Solplanet base entity."""
 
 from collections import abc
 from dataclasses import dataclass
