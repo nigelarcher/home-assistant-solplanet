@@ -220,19 +220,12 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         # This means the user has downgraded from a future version
         return False
 
-    if config_entry.version == 1:
-        new_data = {**config_entry.data}
-        if config_entry.minor_version < 2:
-            new_data[CONF_INTERVAL] = DEFAULT_INTERVAL
-
+    if config_entry.version == 1 and config_entry.minor_version < 2:
+        # 1.1 → 1.2: CONF_INTERVAL was added; inject the default for existing entries.
+        new_data = {**config_entry.data, CONF_INTERVAL: DEFAULT_INTERVAL}
         hass.config_entries.async_update_entry(
-            config_entry, data=new_data, minor_version=1, version=1
+            config_entry, data=new_data, version=1, minor_version=2
         )
-
-    _LOGGER.debug(
-        "Migration to configuration version %s.%s successful",
-        config_entry.version,
-        config_entry.minor_version,
-    )
+        _LOGGER.info("Entry %s migrated to version 1.2.", config_entry.entry_id)
 
     return True
