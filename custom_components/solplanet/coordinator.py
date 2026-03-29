@@ -9,6 +9,7 @@ import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .api_adapter import SolplanetApiAdapter
 from .client import BatterySchedule, BatteryWorkMode, BatteryWorkModes, ScheduleSlot
@@ -455,8 +456,6 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
         if self.__api.version != "v2":
             raise HomeAssistantError("Dongle operations are not supported with V1 protocol")
 
-        from homeassistant.util import dt as dt_util
-
         now = dt_util.now()
         payload = {
             "device": 1,
@@ -588,7 +587,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                 "Battery operations are not supported with V1 protocol"
             ) from err
 
-    async def set_battery_schedule_power(self, sn: str, pin: int | None = None, pout: int | None = None) -> None:
+    async def set_battery_schedule_power(self, pin: int | None = None, pout: int | None = None) -> None:
         """Set battery schedule power settings."""
         try:
             await self.__api.set_schedule_power(pin, pout)
@@ -598,7 +597,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                 "Battery operations are not supported with V1 protocol"
             ) from err
 
-    async def set_battery_schedule_pin(self, sn: str, pin: int) -> None:
+    async def set_battery_schedule_pin(self, pin: int) -> None:
         """Set battery schedule pin."""
         try:
             await self.__api.set_schedule_pin(pin)
@@ -607,7 +606,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                 "Battery operations are not supported with V1 protocol"
             ) from err
 
-    async def set_battery_schedule_pout(self, sn: str, pout: int) -> None:
+    async def set_battery_schedule_pout(self, pout: int) -> None:
         """Set battery schedule pout."""
         try:
             await self.__api.set_schedule_pout(pout)

@@ -283,10 +283,10 @@ class BatteryWorkModes:
         BatteryWorkMode("Time of use mode", 5, 1),
     ]
 
-    def get_all_modes(self, type: int, mod_r: int) -> list[BatteryWorkMode]:
+    def get_all_modes(self, battery_type: int, mod_r: int) -> list[BatteryWorkMode]:
         """Get all possible battery work modes."""
         selected = next(
-            (x for x in self._battery_modes if x.mod_r == mod_r and x.type == type),
+            (x for x in self._battery_modes if x.mod_r == mod_r and x.type == battery_type),
             None,
         )
         result = []
@@ -294,18 +294,18 @@ class BatteryWorkModes:
 
         if selected is None:
             result.append(
-                BatteryWorkMode(f"Unknown (mod_r: {mod_r}, type: {type})", mod_r, type)
+                BatteryWorkMode(f"Unknown (mod_r: {mod_r}, type: {battery_type})", mod_r, battery_type)
             )
 
         return result
 
-    def get_mode(self, type: int, mod_r: int) -> BatteryWorkMode | None:
+    def get_mode(self, battery_type: int, mod_r: int) -> BatteryWorkMode | None:
         """Get battery work mode by type and mod_r."""
         return next(
             (
                 x
-                for x in self.get_all_modes(type, mod_r)
-                if x.type == type and x.mod_r == mod_r
+                for x in self.get_all_modes(battery_type, mod_r)
+                if x.type == battery_type and x.mod_r == mod_r
             ),
             None,
         )
@@ -394,14 +394,14 @@ class ScheduleSlot:
             "mode": self.mode
         }
 
-    def human_readable(self, format: str = "{start} - {end} ({mode})") -> str:
+    def human_readable(self, fmt: str = "{start} - {end} ({mode})") -> str:
         """Convert slot to human readable string.
 
         Args:
-            format: Format string with {start}, {end}, {mode} placeholders
+            fmt: Format string with {start}, {end}, {mode} placeholders
         """
         end_hour = (self.start_hour + self.duration) % 24
-        return format.format(
+        return fmt.format(
             start=f"{self.start_hour:02d}:{self.start_minute:02d}",
             end=f"{end_hour:02d}:{self.start_minute:02d}",
             mode=self.mode
@@ -957,10 +957,10 @@ class SolplanetApiV1(ModbusApiMixin):
         response = await self.client.get("pwrlim.cgi")
         return self._create_class_from_dict(GetMeterInfoResponse, response)
 
-    def _create_class_from_dict(self, cls, dict):
+    def _create_class_from_dict(self, cls, data: dict):
         """Create dataclass instance from dict."""
         allowed = {f.name for f in fields(cls)}
-        return cls(**{k: v for k, v in dict.items() if k in allowed})
+        return cls(**{k: v for k, v in data.items() if k in allowed})
 
 
 class SolplanetApiV2(ModbusApiMixin):
@@ -1123,10 +1123,10 @@ class SolplanetApiV2(ModbusApiMixin):
             if rsp.get("dat") is not None and rsp.get("dat") != "ok":
                 raise RuntimeError(f"Schedule update failed: {rsp}")
 
-    def _create_class_from_dict(self, cls, dict):
+    def _create_class_from_dict(self, cls, data: dict):
         """Create dataclass instance from dict."""
         allowed = {f.name for f in fields(cls)}
-        return cls(**{k: v for k, v in dict.items() if k in allowed})
+        return cls(**{k: v for k, v in data.items() if k in allowed})
 
 # Alias for backward compatibility
 SolplanetApi = SolplanetApiV2
