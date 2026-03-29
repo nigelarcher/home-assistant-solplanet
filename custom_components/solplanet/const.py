@@ -328,3 +328,22 @@ BATTERY_MODEL_NAMES: dict[tuple[int, int], str] = {
     (200, 1): "Com(Lithium Valley)_LV",
     (200, 2): "Com(Lithium Valley)_HV",
 }
+
+# from (assets/meter.json.
+# corresponds to `equipModel` field in the V2 meter app_info response.
+METER_MODEL_NAMES: dict[int, str] = {
+    0: "EASTRON SDM630MCT v2",
+    1: "EASTRON SDM630-Modbus V2",
+    2: "EASTRON SDM630-Modbus V1",
+    3: "EASTRON SDM 220",
+    4: "EASTRON SDM120CT(40mA)",
+    6: "EASTRON SEM3-M-2L-CT1",
+    8: "EASTRON SEM1-M-2L-Grid",
+    9: "EASTRON SEM1-M-2L-PV",
+    11: "SolplanetCT",
+    12: "CT-STMHALL",
+    21: "CHINT DDSU666",
+    22: "CHINT DTSU666",
+    31: "CatchPower",
+    51: "WND-WR-MB",
+}

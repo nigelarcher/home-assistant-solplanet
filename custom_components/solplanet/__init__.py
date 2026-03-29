@@ -25,6 +25,7 @@ from .const import (
     INVERTER_IDENTIFIER,
     MANUFACTURER,
     METER_IDENTIFIER,
+    METER_MODEL_NAMES,
 )
 from .coordinator import SolplanetDataUpdateCoordinator
 from .services import async_setup_services
@@ -148,23 +149,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
         # V2 meters discovered via `getting.cgi`
         if isinstance(app_info, dict):
             # from assets/meter.json
-            equip_model_map: dict[int, str] = {
-                0: "EASTRON SDM630MCT v2",
-                1: "EASTRON SDM630-Modbus V2",
-                2: "EASTRON SDM630-Modbus V1",
-                3: "EASTRON SDM 220",
-                4: "EASTRON SDM120CT(40mA)",
-                6: "EASTRON SEM3-M-2L-CT1",
-                8: "EASTRON SEM1-M-2L-Grid",
-                9: "EASTRON SEM1-M-2L-PV",
-                11: "SolplanetCT",
-                12: "CT-STMHALL",
-                21: "CHINT DDSU666",
-                22: "CHINT DTSU666",
-                31: "CatchPower",
-                51: "WND-WR-MB",
-            }
-
             serial = app_info.get("sn") or meter_isn
 
             equip_model_raw = app_info.get("equipModel")
@@ -173,7 +157,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
                 if isinstance(equip_model_raw, int | str) and str(equip_model_raw).isdigit()
                 else None
             )
-            model_name = equip_model_map.get(equip_model) if equip_model is not None else None
+            model_name = METER_MODEL_NAMES.get(equip_model) if equip_model is not None else None
 
             # Some firmwares report equipModel=255 as "None".
             if equip_model == 255:
