@@ -126,8 +126,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
             else battery_info.isn
         )
 
-        battery_manufacturer = BATTERY_MANUFACTURER_NAMES.get(battery_info.muf) if battery_info.muf is not None else None
-        battery_model = BATTERY_MODEL_NAMES.get((battery_info.muf, battery_info.mod)) if battery_info.muf is not None and battery_info.mod is not None else None
+        battery_manufacturer = (
+            BATTERY_MANUFACTURER_NAMES.get(battery_info.muf) if battery_info.muf is not None else None
+        )
+        battery_model = (
+            BATTERY_MODEL_NAMES.get((battery_info.muf, battery_info.mod))
+            if battery_info.muf is not None and battery_info.mod is not None
+            else None
+        )
 
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
@@ -218,9 +224,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     if config_entry.version == 1 and config_entry.minor_version < 2:
         # 1.1 → 1.2: CONF_INTERVAL was added; inject the default for existing entries.
         new_data = {**config_entry.data, CONF_INTERVAL: DEFAULT_INTERVAL}
-        hass.config_entries.async_update_entry(
-            config_entry, data=new_data, version=1, minor_version=2
-        )
+        hass.config_entries.async_update_entry(config_entry, data=new_data, version=1, minor_version=2)
         _LOGGER.info("Entry %s migrated to version 1.2.", config_entry.entry_id)
 
     return True
