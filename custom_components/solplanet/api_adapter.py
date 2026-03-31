@@ -32,9 +32,7 @@ class SolplanetApiAdapter:
     and delegates all API calls to the appropriate client implementation.
     """
 
-    def __init__(
-        self, client: SolplanetClient, api: SolplanetApiV1 | SolplanetApiV2
-    ) -> None:
+    def __init__(self, client: SolplanetClient, api: SolplanetApiV1 | SolplanetApiV2) -> None:
         """Initialize the adapter with detected API client.
 
         Args:
@@ -76,6 +74,7 @@ class SolplanetApiAdapter:
         # API version configurations: (version_name, endpoint, scheme, port)
         api_configs = [
             ("v2", "getdev.cgi?device=2", "https", 443),
+            ("v2", "getdev.cgi?device=2", "http", 8484),
             ("v1", "invinfo.cgi", "http", 8484),
         ]
 
@@ -97,7 +96,6 @@ class SolplanetApiAdapter:
 
         msg = "Failed to detect any supported protocol version: " + "; ".join(errors)
         raise RuntimeError(msg)
-
 
     @property
     def version(self) -> Literal["v1", "v2"]:
@@ -223,9 +221,7 @@ class SolplanetApiAdapter:
             raise NotImplementedError("Battery operations are not supported in V1 protocol")
         return await self._api.get_schedule()
 
-    async def set_schedule_power(
-        self, pin: int | None = None, pout: int | None = None
-    ) -> None:
+    async def set_schedule_power(self, pin: int | None = None, pout: int | None = None) -> None:
         """Set battery schedule power configuration.
 
         Raises:

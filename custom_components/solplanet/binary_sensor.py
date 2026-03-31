@@ -1,4 +1,5 @@
 """Solplanet binary sensor platform."""
+
 from dataclasses import dataclass
 import logging
 
@@ -17,10 +18,9 @@ from .entity import SolplanetEntity, SolplanetEntityDescription
 
 _LOGGER = logging.getLogger(__name__)
 
+
 @dataclass(frozen=True, kw_only=True)
-class SolplanetBinarySensorEntityDescription(
-    SolplanetEntityDescription, BinarySensorEntityDescription
-):
+class SolplanetBinarySensorEntityDescription(SolplanetEntityDescription, BinarySensorEntityDescription):
     """Describe Solplanet binary sensor entity."""
 
 
@@ -47,11 +47,10 @@ class SolplanetBinarySensor(SolplanetEntity, BinarySensorEntity):
 
 def create_battery_binary_sensors(coordinator, isn: str) -> list[SolplanetBinarySensorEntityDescription]:
     """Create binary sensors for battery."""
+
     def value_mapper(raw):
         has_schedule = any(
-            any(code != 0 for code in raw.get(day, []))
-            for day in BatterySchedule.DAYS
-            if day in raw
+            any(code != 0 for code in raw.get(day, [])) for day in BatterySchedule.DAYS if day in raw
         )
         return has_schedule
 
@@ -71,8 +70,8 @@ def create_battery_binary_sensors(coordinator, isn: str) -> list[SolplanetBinary
                     for day, day_slots in schedule["slots"].items()
                 },
                 "pin": schedule["Pin"],
-                "pout": schedule["Pout"]
-            }
+                "pout": schedule["Pout"],
+            },
         ),
     ]
 

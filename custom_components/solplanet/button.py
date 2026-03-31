@@ -21,9 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
-class SolplanetButtonEntityDescription(
-    SolplanetEntityDescription, ButtonEntityDescription
-):
+class SolplanetButtonEntityDescription(SolplanetEntityDescription, ButtonEntityDescription):
     """Describe Solplanet button entity."""
 
     callback: abc.Callable[[], Any]
@@ -41,7 +39,7 @@ class SolplanetButton(SolplanetEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
         await self.entity_description.callback()
-        await self.coordinator.async_request_refresh()
+        self.coordinator.hass.async_create_task(self.coordinator.async_request_refresh())
 
 
 def create_dongle_entities_description(
@@ -80,9 +78,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up button entities for Solplanet from a config entry."""
-    coordinator: SolplanetDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
-        "coordinator"
-    ]
+    coordinator: SolplanetDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
 
     buttons: list[SolplanetButton] = []
 

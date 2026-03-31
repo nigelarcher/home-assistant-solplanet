@@ -1,9 +1,8 @@
-"""Solplanet sensors platform."""
+"""Solplanet base entity."""
 
 from collections import abc
 from dataclasses import dataclass
 import logging
-import re
 from typing import Any
 
 from homeassistant.core import callback
@@ -91,9 +90,9 @@ class SolplanetEntity(CoordinatorEntity, Entity):
     def _get_value_from_coordinator(self) -> float | int | str | None:
         """Return the value from coordinator data."""
         try:
-            data = self.coordinator.data[self.entity_description.data_field_device_type][
-                self._isn
-            ][self.entity_description.data_field_data_type]
+            data = self.coordinator.data[self.entity_description.data_field_device_type][self._isn][
+                self.entity_description.data_field_data_type
+            ]
         except KeyError:
             raise InverterInSleepModeError from None
 
@@ -106,13 +105,11 @@ class SolplanetEntity(CoordinatorEntity, Entity):
                 data = (
                     data[int(path_item)]
                     if isinstance(data, list)
-                    else getattr(data, str(path_item))
+                    else getattr(data, str(path_item), None)
                     if hasattr(data, "__dict__")
                     else data.get(path_item)
                 )
             else:
-                if self.entity_description.data_field_path[0] == "selected":
-                    _LOGGER.warning("Selected: %r", type(data))
                 return None
 
         if self.entity_description.data_field_value_mapper is not None:
@@ -125,10 +122,7 @@ class SolplanetEntity(CoordinatorEntity, Entity):
             _LOGGER.debug("NaN value received from Inverter")
             return None
 
-        if (
-            data is not None
-            and self.entity_description.data_field_value_multiply is not None
-        ):
+        if data is not None and self.entity_description.data_field_value_multiply is not None:
             data = data * self.entity_description.data_field_value_multiply
 
         return data
@@ -180,9 +174,9 @@ class SolplanetEntity(CoordinatorEntity, Entity):
             return None
 
         try:
-            data = self.coordinator.data[self.entity_description.data_field_device_type][
-                self._isn
-            ][self.entity_description.data_field_data_type]
+            data = self.coordinator.data[self.entity_description.data_field_device_type][self._isn][
+                self.entity_description.data_field_data_type
+            ]
         except KeyError:
             return None
 

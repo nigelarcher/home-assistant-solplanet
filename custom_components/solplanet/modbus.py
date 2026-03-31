@@ -96,9 +96,7 @@ class ModbusRtuFrameGenerator:
 
         return frame.hex()
 
-    def _generate_frame(
-        self, device_id: int, function_code: int, register_offset: int, value: int
-    ) -> str:
+    def _generate_frame(self, device_id: int, function_code: int, register_offset: int, value: int) -> str:
         """Generate Modbus RTU frame for the specified function code."""
         if not (0 <= device_id <= 0xFF):
             raise ValueError("Invalid device ID (0-255).")
@@ -107,9 +105,7 @@ class ModbusRtuFrameGenerator:
         if not (0 <= value <= 0xFFFF):
             raise ValueError("Invalid value (0-65535).")
 
-        frame = struct.pack(
-            ">B B H H", device_id, function_code, register_offset, value
-        )
+        frame = struct.pack(">B B H H", device_id, function_code, register_offset, value)
         crc = self._calculate_crc(frame)
         frame += struct.pack("<H", crc)  # Add CRC in little-endian order
 
@@ -146,18 +142,14 @@ class ModbusRtuFrameGenerator:
         if received_crc != calculated_crc:
             raise ValueError("CRC error: checksums do not match.")
 
-    def _decode_write_single_holding_register_response(
-        self, response: bytes
-    ) -> dict[str, int]:
+    def _decode_write_single_holding_register_response(self, response: bytes) -> dict[str, int]:
         """Decode Modbus RTU response for Write Single Holding Register function (Function Code: 0x06)."""
         if len(response) != 8:
             raise ValueError("Invalid response length.")
 
         self._verify_crc(response)
 
-        device_id, function_code, register_address, data = struct.unpack(
-            ">B B H H", response[:6]
-        )
+        device_id, function_code, register_address, data = struct.unpack(">B B H H", response[:6])
 
         return {
             "device_id": device_id,
@@ -241,18 +233,14 @@ class ModbusRtuFrameGenerator:
 
         raise ValueError(f"Unsupported data type: {data_type}")
 
-    def _decode_write_multiple_holding_registers_response(
-        self, response: bytes
-    ) -> dict[str, int]:
+    def _decode_write_multiple_holding_registers_response(self, response: bytes) -> dict[str, int]:
         """Decode Modbus RTU response for Write Multiple Holding Registers (Function Code: 0x10)."""
         if len(response) != 8:
             raise ValueError("Invalid response length.")
 
         self._verify_crc(response)
 
-        device_id, function_code, register_address, quantity = struct.unpack(
-            ">B B H H", response[:6]
-        )
+        device_id, function_code, register_address, quantity = struct.unpack(">B B H H", response[:6])
 
         return {
             "device_id": device_id,
@@ -268,9 +256,7 @@ class ModbusRtuFrameGenerator:
 
         self._verify_crc(response)
 
-        device_id, error_function_code, exception_code = struct.unpack(
-            ">B B B", response[:3]
-        )
+        device_id, error_function_code, exception_code = struct.unpack(">B B B", response[:3])
 
         return {
             "device_id": device_id,
@@ -300,9 +286,7 @@ class ModbusRtuFrameGenerator:
         if data_type in self.VALUE_RANGES:
             min_val, max_val = self.VALUE_RANGES[data_type]
             if not (min_val <= value <= max_val):
-                raise ValueError(
-                    f"Value for type {data_type.value} must be in range {min_val}-{max_val}"
-                )
+                raise ValueError(f"Value for type {data_type.value} must be in range {min_val}-{max_val}")
 
         # Process based on data type
         if data_type in [

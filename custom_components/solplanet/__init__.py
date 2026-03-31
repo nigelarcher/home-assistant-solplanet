@@ -16,6 +16,8 @@ from .api_adapter import SolplanetApiAdapter
 from .client import SolplanetClient
 from .const import (
     BATTERY_IDENTIFIER,
+    BATTERY_MANUFACTURER_NAMES,
+    BATTERY_MODEL_NAMES,
     CONF_INTERVAL,
     DEFAULT_INTERVAL,
     DOMAIN,
@@ -23,6 +25,7 @@ from .const import (
     INVERTER_IDENTIFIER,
     MANUFACTURER,
     METER_IDENTIFIER,
+    METER_MODEL_NAMES,
 )
 from .coordinator import SolplanetDataUpdateCoordinator
 from .services import async_setup_services
@@ -87,7 +90,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             identifiers={(DOMAIN, f"{DONGLE_IDENTIFIER}_{dongle_id}")},
-            name=f"{dongle.get('nam') or 'Solplanet Dongle'} ({dongle_id})",
+            name=dongle.get("nam") or "Solplanet Dongle",
             manufacturer=dongle.get("brd") or dongle.get("muf") or MANUFACTURER,
             model=dongle.get("mod") or dongle.get("hw") or "Dongle",
             serial_number=dongle.get("psn") or dongle_id,
@@ -101,7 +104,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             identifiers={(DOMAIN, inverter_info.isn or "")},
-            name=f"{inverter_info.model} ({inverter_info.isn})",
+            name=inverter_info.model,
             model=inverter_info.model,
             manufacturer=MANUFACTURER,
             serial_number=inverter_info.isn,
@@ -111,6 +114,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
     for battery_isn in coordinator.data[BATTERY_IDENTIFIER]:
         battery_info = coordinator.data[BATTERY_IDENTIFIER][battery_isn]["info"]
 
+        if battery_info is None:
+            # Info unavailable (battery unreachable on first refresh); skip device creation.
+            # The device will be registered on the next successful update cycle.
+            continue
+
         # Battery endpoint (device=4) reports `isn` as the inverter serial.
         # Use the nested battery part number as the battery serial when available.
         battery_serial = (
@@ -119,11 +127,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
             else battery_info.isn
         )
 
+        battery_manufacturer = (
+            BATTERY_MANUFACTURER_NAMES.get(battery_info.muf) if battery_info.muf is not None else None
+        )
+        battery_model = (
+            BATTERY_MODEL_NAMES.get((battery_info.muf, battery_info.mod))
+            if battery_info.muf is not None and battery_info.mod is not None
+            else None
+        )
+
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             # Keep identifiers stable (and aligned with `device_info`) to avoid orphaning entities.
             identifiers={(DOMAIN, f"{BATTERY_IDENTIFIER}_{battery_info.isn or ''}")},
-            name=f"Battery ({battery_serial})",
+            name=battery_model or "Battery",
+            manufacturer=battery_manufacturer,
+            model=battery_model,
             serial_number=battery_serial,
             sw_version=battery_info.battery.softwarever if battery_info.battery else "",
             hw_version=battery_info.battery.hardwarever if battery_info.battery else "",
@@ -137,24 +156,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
         # V2 meters discovered via `getting.cgi`
         if isinstance(app_info, dict):
             # from assets/meter.json
-            equip_model_map: dict[int, str] = {
-                0: "EASTRON SDM630MCT v2",
-                1: "EASTRON SDM630-Modbus V2",
-                2: "EASTRON SDM630-Modbus V1",
-                3: "EASTRON SDM 220",
-                4: "EASTRON SDM120CT(40mA)",
-                6: "EASTRON SEM3-M-2L-CT1",
-                8: "EASTRON SEM1-M-2L-Grid",
-                9: "EASTRON SEM1-M-2L-PV",
-                11: "SolplanetCT",
-                12: "CT-STMHALL",
-                21: "CHINT DDSU666",
-                22: "CHINT DTSU666",
-                31: "CatchPower",
-                51: "WND-WR-MB",
-            }
-
-            addr = app_info.get("address")
             serial = app_info.get("sn") or meter_isn
 
             equip_model_raw = app_info.get("equipModel")
@@ -163,14 +164,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolplanetConfigEntry) ->
                 if isinstance(equip_model_raw, int | str) and str(equip_model_raw).isdigit()
                 else None
             )
-            model_name = equip_model_map.get(equip_model) if equip_model is not None else None
+            model_name = METER_MODEL_NAMES.get(equip_model) if equip_model is not None else None
 
             # Some firmwares report equipModel=255 as "None".
             if equip_model == 255:
                 model_name = None
 
             name_prefix = model_name or "Meter"
-            name = f"{name_prefix} ({serial})"
+            name = name_prefix
 
             device_registry.async_get_or_create(
                 config_entry_id=entry.entry_id,
@@ -221,19 +222,10 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         # This means the user has downgraded from a future version
         return False
 
-    if config_entry.version == 1:
-        new_data = {**config_entry.data}
-        if config_entry.minor_version < 2:
-            new_data[CONF_INTERVAL] = DEFAULT_INTERVAL
-
-        hass.config_entries.async_update_entry(
-            config_entry, data=new_data, minor_version=1, version=1
-        )
-
-    _LOGGER.debug(
-        "Migration to configuration version %s.%s successful",
-        config_entry.version,
-        config_entry.minor_version,
-    )
+    if config_entry.version == 1 and config_entry.minor_version < 2:
+        # 1.1 → 1.2: CONF_INTERVAL was added; inject the default for existing entries.
+        new_data = {**config_entry.data, CONF_INTERVAL: DEFAULT_INTERVAL}
+        hass.config_entries.async_update_entry(config_entry, data=new_data, version=1, minor_version=2)
+        _LOGGER.info("Entry %s migrated to version 1.2.", config_entry.entry_id)
 
     return True

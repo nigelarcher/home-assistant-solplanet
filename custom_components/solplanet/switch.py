@@ -102,8 +102,6 @@ def create_battery_switches(isn: str) -> list[SolplanetSwitchEntityDescription]:
     ]
 
 
-
-
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: SolplanetConfigEntry,
