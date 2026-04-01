@@ -368,16 +368,52 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
             # - Some V2 firmwares do not implement `getting.cgi` and return HTTP 404.
             #   In that case, fall back to legacy meter endpoints (`device=3`) if they look valid.
             if self.__api.version == "v2":
-                if app_meters:
+                # Check whether ANY app meter actually has live data (app_data).
+                has_app_data = any(
+                    entry.get("app_data") is not None for entry in app_meters.values()
+                )
+
+                if app_meters and has_app_data:
                     for sn, entry in app_meters.items():
                         meter_payload[sn] = {"app_info": entry.get("app_info")}
-                        # Only include app_data on the meter we can currently populate.
                         if entry.get("app_data") is not None:
                             meter_payload[sn]["app_data"] = entry.get("app_data")
                         if entry.get("meter_req") is not None:
                             meter_payload[sn]["meter_req"] = entry.get("meter_req")
                         if entry.get("meter_power") is not None:
                             meter_payload[sn]["meter_power"] = entry.get("meter_power")
+                elif app_meters:
+                    # App protocol returned meter metadata (app_info) but no live data
+                    # (app_data). Fall back to legacy device=3 endpoints for actual readings
+                    # and merge app-protocol extras (meter_req, meter_power) onto the result.
+                    _LOGGER.debug(
+                        "App-protocol meters found but no app_data; falling back to legacy meter endpoints"
+                    )
+                    try:
+                        legacy_data = await self.__api.get_meter_data()
+                        legacy_info = await self.__api.get_meter_info()
+                        if getattr(legacy_info, "sn", None) is not None:
+                            meter_sn = legacy_info.sn
+                        if meter_sn and _legacy_meter_payload_looks_valid(legacy_data):
+                            meter_payload = {meter_sn: {"data": legacy_data, "info": legacy_info}}
+                            # Carry over any app-protocol config (meter_req, meter_power)
+                            # from the primary app meter so power-limit entities still work.
+                            primary_app = app_meters.get(app_primary_sn) or next(
+                                iter(app_meters.values()), {}
+                            )
+                            if primary_app.get("meter_req") is not None:
+                                meter_payload[meter_sn]["meter_req"] = primary_app["meter_req"]
+                            if primary_app.get("meter_power") is not None:
+                                meter_payload[meter_sn]["meter_power"] = primary_app["meter_power"]
+                        else:
+                            meter_payload = prev_meter
+                    except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
+                        _LOGGER.debug(
+                            "Failed fetching legacy V2 meter data (app_data fallback): %s",
+                            err,
+                            exc_info=True,
+                        )
+                        meter_payload = prev_meter
                 else:
                     # App protocol unsupported or returned no meters: try legacy device=3.
                     try:

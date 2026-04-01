@@ -96,6 +96,9 @@ class SolplanetEntity(CoordinatorEntity, Entity):
         except KeyError:
             raise InverterInSleepModeError from None
 
+        if data is None:
+            raise InverterInSleepModeError
+
         for path_item in self.entity_description.data_field_path:
             if (
                 (isinstance(data, list) and len(data) > 0)
