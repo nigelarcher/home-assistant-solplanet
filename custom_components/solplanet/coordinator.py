@@ -373,6 +373,13 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     entry.get("app_data") is not None for entry in app_meters.values()
                 )
 
+                _LOGGER.debug(
+                    "Meter resolution: app_meters=%s, has_app_data=%s, app_primary_sn=%s",
+                    list(app_meters.keys()),
+                    has_app_data,
+                    app_primary_sn,
+                )
+
                 if app_meters and has_app_data:
                     for sn, entry in app_meters.items():
                         meter_payload[sn] = {"app_info": entry.get("app_info")}
@@ -394,6 +401,12 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         legacy_info = await self.__api.get_meter_info()
                         if getattr(legacy_info, "sn", None) is not None:
                             meter_sn = legacy_info.sn
+                        _LOGGER.debug(
+                            "Legacy meter fallback: meter_sn=%s, legacy_info.sn=%s, valid=%s",
+                            meter_sn,
+                            getattr(legacy_info, "sn", None),
+                            _legacy_meter_payload_looks_valid(legacy_data),
+                        )
                         if meter_sn and _legacy_meter_payload_looks_valid(legacy_data):
                             meter_payload = {meter_sn: {"data": legacy_data, "info": legacy_info}}
                             # Carry over any app-protocol config (meter_req, meter_power)
@@ -444,7 +457,11 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     _LOGGER.debug("Failed fetching meter data: %s", err, exc_info=True)
                     meter_payload = prev_meter
 
-            _LOGGER.debug("Inverters data updated")
+            _LOGGER.debug(
+                "Inverters data updated. Meter payload keys: %s",
+                {sn: list(v.keys()) if isinstance(v, dict) else type(v).__name__ for sn, v in meter_payload.items()}
+                if isinstance(meter_payload, dict) else "not a dict",
+            )
             return {
                 DONGLE_IDENTIFIER: dongle_payload,
                 INVERTER_IDENTIFIER: inverter_payload,
