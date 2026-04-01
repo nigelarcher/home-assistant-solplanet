@@ -429,18 +429,25 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         meter_payload = prev_meter
                 else:
                     # App protocol unsupported or returned no meters: try legacy device=3.
+                    _LOGGER.warning("No app meters; trying legacy device=3 endpoints")
                     try:
                         legacy_data = await self.__api.get_meter_data()
                         legacy_info = await self.__api.get_meter_info()
                         if getattr(legacy_info, "sn", None) is not None:
                             meter_sn = legacy_info.sn
+                        _LOGGER.warning(
+                            "Legacy V2 meter: meter_sn=%s, legacy_info.sn=%s, valid=%s",
+                            meter_sn,
+                            getattr(legacy_info, "sn", None),
+                            _legacy_meter_payload_looks_valid(legacy_data),
+                        )
                         if meter_sn and _legacy_meter_payload_looks_valid(legacy_data):
                             meter_payload = {meter_sn: {"data": legacy_data, "info": legacy_info}}
                         else:
                             # Keep previous payload on transient failures or stub responses.
                             meter_payload = prev_meter
                     except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
-                        _LOGGER.debug("Failed fetching legacy V2 meter data: %s", err, exc_info=True)
+                        _LOGGER.warning("Failed fetching legacy V2 meter data: %s", err, exc_info=True)
                         meter_payload = prev_meter
             else:
                 # V1: use legacy meter endpoints.
