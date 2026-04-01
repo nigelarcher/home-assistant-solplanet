@@ -373,7 +373,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     entry.get("app_data") is not None for entry in app_meters.values()
                 )
 
-                _LOGGER.warning(
+                _LOGGER.debug(
                     "Meter resolution: app_meters=%s, has_app_data=%s, app_primary_sn=%s",
                     list(app_meters.keys()),
                     has_app_data,
@@ -393,7 +393,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     # App protocol returned meter metadata (app_info) but no live data
                     # (app_data). Fall back to legacy device=3 endpoints for actual readings
                     # and merge app-protocol extras (meter_req, meter_power) onto the result.
-                    _LOGGER.warning(
+                    _LOGGER.debug(
                         "App-protocol meters found but no app_data; falling back to legacy meter endpoints"
                     )
                     try:
@@ -401,7 +401,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         legacy_info = await self.__api.get_meter_info()
                         if getattr(legacy_info, "sn", None) is not None:
                             meter_sn = legacy_info.sn
-                        _LOGGER.warning(
+                        _LOGGER.debug(
                             "Legacy meter fallback: meter_sn=%s, legacy_info.sn=%s, valid=%s",
                             meter_sn,
                             getattr(legacy_info, "sn", None),
@@ -429,13 +429,13 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         meter_payload = prev_meter
                 else:
                     # App protocol unsupported or returned no meters: try legacy device=3.
-                    _LOGGER.warning("No app meters; trying legacy device=3 endpoints")
+                    _LOGGER.debug("No app meters; trying legacy device=3 endpoints")
                     try:
                         legacy_data = await self.__api.get_meter_data()
                         legacy_info = await self.__api.get_meter_info()
                         if getattr(legacy_info, "sn", None) is not None:
                             meter_sn = legacy_info.sn
-                        _LOGGER.warning(
+                        _LOGGER.debug(
                             "Legacy V2 meter: meter_sn=%s, legacy_info.sn=%s, valid=%s",
                             meter_sn,
                             getattr(legacy_info, "sn", None),
@@ -447,7 +447,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                             # Keep previous payload on transient failures or stub responses.
                             meter_payload = prev_meter
                     except (Exception, asyncio.CancelledError) as err:  # noqa: BLE001
-                        _LOGGER.warning("Failed fetching legacy V2 meter data: %s", err, exc_info=True)
+                        _LOGGER.debug("Failed fetching legacy V2 meter data: %s", err, exc_info=True)
                         meter_payload = prev_meter
             else:
                 # V1: use legacy meter endpoints.
@@ -464,7 +464,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     _LOGGER.debug("Failed fetching meter data: %s", err, exc_info=True)
                     meter_payload = prev_meter
 
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "Inverters data updated. Meter payload keys: %s",
                 {sn: list(v.keys()) if isinstance(v, dict) else type(v).__name__ for sn, v in meter_payload.items()}
                 if isinstance(meter_payload, dict) else "not a dict",
