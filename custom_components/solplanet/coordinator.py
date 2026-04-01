@@ -373,7 +373,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     entry.get("app_data") is not None for entry in app_meters.values()
                 )
 
-                _LOGGER.debug(
+                _LOGGER.warning(
                     "Meter resolution: app_meters=%s, has_app_data=%s, app_primary_sn=%s",
                     list(app_meters.keys()),
                     has_app_data,
@@ -393,7 +393,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     # App protocol returned meter metadata (app_info) but no live data
                     # (app_data). Fall back to legacy device=3 endpoints for actual readings
                     # and merge app-protocol extras (meter_req, meter_power) onto the result.
-                    _LOGGER.debug(
+                    _LOGGER.warning(
                         "App-protocol meters found but no app_data; falling back to legacy meter endpoints"
                     )
                     try:
@@ -401,7 +401,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                         legacy_info = await self.__api.get_meter_info()
                         if getattr(legacy_info, "sn", None) is not None:
                             meter_sn = legacy_info.sn
-                        _LOGGER.debug(
+                        _LOGGER.warning(
                             "Legacy meter fallback: meter_sn=%s, legacy_info.sn=%s, valid=%s",
                             meter_sn,
                             getattr(legacy_info, "sn", None),
@@ -457,7 +457,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
                     _LOGGER.debug("Failed fetching meter data: %s", err, exc_info=True)
                     meter_payload = prev_meter
 
-            _LOGGER.debug(
+            _LOGGER.warning(
                 "Inverters data updated. Meter payload keys: %s",
                 {sn: list(v.keys()) if isinstance(v, dict) else type(v).__name__ for sn, v in meter_payload.items()}
                 if isinstance(meter_payload, dict) else "not a dict",
