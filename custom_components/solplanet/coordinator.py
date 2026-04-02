@@ -264,7 +264,7 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
             # Meter
             meter_payload: dict[str, dict] = {}
             prev_meter: dict = previous.get(METER_IDENTIFIER, {}) if isinstance(previous, dict) else {}
-            meter_sn: str | None = None
+            meter_sn: str | None = isns[0] if isns else None
 
             def _legacy_meter_payload_looks_valid(meter_data: object) -> bool:
                 """Return True if legacy `device=3` meter data looks real vs a stub/zeros payload."""
