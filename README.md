@@ -19,16 +19,16 @@ This repository is a fork of the upstream integration by `zbigniewmotyka`, with 
 
 ## Installation
 
-#### With HACS
+### With HACS
 
 [![Open in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=calvinbui&repository=home-assistant-solplanet&category=integration)
 
-#### Manual installation
+### Manual installation
 
 1. Place `solplanet` directory inside `config/custom_components` directory
 2. Restart Home Assistant.
 
-## Setting Up
+### Setting Up
 
 1. Add Solplanet from the Integration page.
 2. Enter the IP address or hostname of your Solplanet dongle
