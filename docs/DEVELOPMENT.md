@@ -30,7 +30,7 @@ Alternatively, you can use the keyboard shortcut `Ctrl+Shift+B` / `Cmd+Shift+B` 
 
 Once Home Assistant starts, it will be available at:
 
-**http://localhost:7123**
+**<http://localhost:7123>**
 
 The initial startup may take a minute or two. You can monitor the startup progress in the VS Code terminal.
 
@@ -46,4 +46,3 @@ The initial startup may take a minute or two. You can monitor the startup progre
 - If Home Assistant fails to start, check the terminal output for error messages
 - To restart Home Assistant, stop the current task and run "Start Home Assistant" again
 - If you encounter issues with the dev container, try rebuilding it: `F1` → "Dev Containers: Rebuild Container"
-
