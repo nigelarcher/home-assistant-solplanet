@@ -562,14 +562,14 @@ class SolplanetDataUpdateCoordinator(DataUpdateCoordinator):
         except NotImplementedError as err:
             raise HomeAssistantError("Battery operations are not supported with V1 protocol") from err
 
-    async def set_battery_schedule_pin(self, pin: int) -> None:
+    async def set_battery_schedule_pin(self, sn: str, pin: int) -> None:
         """Set battery schedule pin."""
         try:
             await self.__api.set_schedule_pin(pin)
         except NotImplementedError as err:
             raise HomeAssistantError("Battery operations are not supported with V1 protocol") from err
 
-    async def set_battery_schedule_pout(self, pout: int) -> None:
+    async def set_battery_schedule_pout(self, sn: str, pout: int) -> None:
         """Set battery schedule pout."""
         try:
             await self.__api.set_schedule_pout(pout)
