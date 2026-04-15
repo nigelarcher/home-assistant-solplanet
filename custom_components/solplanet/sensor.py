@@ -984,28 +984,6 @@ def create_battery_entities_description(
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL,
         ),
-        SolplanetSensorEntityDescription(
-            key=f"{isn}_charge_ac_td",
-            name="AC charge today",
-            data_field_device_type=BATTERY_IDENTIFIER,
-            data_field_data_type="data",
-            data_field_path=["charge_ac_td"],
-            data_field_value_multiply=0.1,
-            native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-            device_class=SensorDeviceClass.ENERGY,
-            state_class=SensorStateClass.TOTAL_INCREASING,
-        ),
-        SolplanetSensorEntityDescription(
-            key=f"{isn}_charge_ac_to",
-            name="AC charge total",
-            data_field_device_type=BATTERY_IDENTIFIER,
-            data_field_data_type="data",
-            data_field_path=["charge_ac_to"],
-            data_field_value_multiply=0.1,
-            native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-            device_class=SensorDeviceClass.ENERGY,
-            state_class=SensorStateClass.TOTAL_INCREASING,
-        ),
     ]
 
     for i in range(3):
