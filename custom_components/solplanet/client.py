@@ -706,8 +706,6 @@ class GetBatteryDataResponse:
         rpesp: EPS reactive power in VAr
         etdesp: EPS energy today in 0.1 kWh
         etoesp: EPS energy total in 0.1 kWh
-        charge_ac_td: AC charge today in 0.1 kWh
-        charge_ac_to: AC charge total in 0.1 kWh
         vl1esp: EPS phase 1 voltage in 0.1 V
         il1esp: EPS phase 1 current in 0.1 A
         pac1esp: EPS phase 1 power in W
@@ -757,8 +755,6 @@ class GetBatteryDataResponse:
     rpesp: int | None = None
     etdesp: int | None = None
     etoesp: int | None = None
-    charge_ac_td: int | None = None
-    charge_ac_to: int | None = None
     vl1esp: int | None = None
     il1esp: int | None = None
     pac1esp: int | None = None
