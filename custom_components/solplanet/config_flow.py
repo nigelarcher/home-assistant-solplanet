@@ -95,16 +95,20 @@ class SolplanetConfigFlow(ConfigFlow, domain=DOMAIN):
         entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
 
         if user_input is not None:
-            # Update the config entry with new interval
-            new_data = {**entry.data, CONF_INTERVAL: user_input[CONF_INTERVAL]}
+            new_data = {
+                **entry.data,
+                CONF_HOST: user_input[CONF_HOST],
+                CONF_INTERVAL: user_input[CONF_INTERVAL],
+            }
             self.hass.config_entries.async_update_entry(entry, data=new_data)
             await self.hass.config_entries.async_reload(entry.entry_id)
             return self.async_abort(reason="reconfigure_successful")
 
-        # Show form with current interval value
+        current_host = entry.data.get(CONF_HOST, "")
         current_interval = entry.data.get(CONF_INTERVAL, DEFAULT_INTERVAL)
         schema = vol.Schema(
             {
+                vol.Required(CONF_HOST, default=current_host): str,
                 vol.Required(CONF_INTERVAL, default=current_interval): int,
             }
         )
