@@ -14,10 +14,11 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _build_target(call: ServiceCall) -> dict:
-    """Extract entity_id/device_id from call.data.
+    """
+    Extract entity_id/device_id from call.data.
 
-    Home Assistant merges any ``target:`` fields into ``call.data`` before the
-    handler runs; ``ServiceCall`` itself has no ``target`` attribute.
+    Home Assistant merges any `target:` fields into `call.data` before the
+    handler runs; `ServiceCall` itself has no `target` attribute.
     """
     target: dict = {}
     if "entity_id" in call.data:
