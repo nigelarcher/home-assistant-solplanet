@@ -14,8 +14,13 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _build_target(call: ServiceCall) -> dict:
-    """Merge ServiceCall.target with legacy entity_id/device_id from call.data."""
-    target = dict(call.target)
+    """
+    Extract entity_id/device_id from call.data.
+
+    Home Assistant merges any `target:` fields into `call.data` before the
+    handler runs; `ServiceCall` itself has no `target` attribute.
+    """
+    target: dict = {}
     if "entity_id" in call.data:
         target["entity_id"] = call.data["entity_id"]
     if "device_id" in call.data:
