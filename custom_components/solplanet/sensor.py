@@ -991,7 +991,7 @@ def create_battery_entities_description(
             [
                 SolplanetSensorEntityDescription(
                     key=f"{isn}_vl{i + 1}esp",
-                    name=f"EPS phase {i + 1} current",
+                    name=f"EPS phase {i + 1} voltage",
                     data_field_device_type=BATTERY_IDENTIFIER,
                     data_field_data_type="data",
                     data_field_path=[f"vl{i + 1}esp"],
@@ -1002,7 +1002,7 @@ def create_battery_entities_description(
                 ),
                 SolplanetSensorEntityDescription(
                     key=f"{isn}_il{i + 1}esp",
-                    name=f"EPS phase {i + 1} voltage",
+                    name=f"EPS phase {i + 1} current",
                     data_field_device_type=BATTERY_IDENTIFIER,
                     data_field_data_type="data",
                     data_field_path=[f"il{i + 1}esp"],
